@@ -49,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('coupon-apply', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('customer-recovery', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
 
         RateLimiter::for('staff-two-factor-manage', fn (Request $request): Limit => Limit::perMinute(15)->by($request->user()?->getAuthIdentifier() ?? $request->ip()));

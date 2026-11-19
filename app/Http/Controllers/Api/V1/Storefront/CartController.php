@@ -11,8 +11,6 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
@@ -23,7 +21,7 @@ class CartController extends Controller
 
     public function show(Request $request): JsonResponse
     {
-        $cart = $this->resolve($request);
+        $cart = $this->carts->resolveRequest($request);
 
         return $this->snapshot($request, $cart['cart'], $cart['guest_token']);
     }
@@ -34,7 +32,7 @@ class CartController extends Controller
             'variant_id' => ['required', 'ulid'],
             'quantity' => ['required', 'integer', 'min:1', 'max:'.CartService::MAX_ITEM_QUANTITY],
         ]);
-        $cart = $this->resolve($request);
+        $cart = $this->carts->resolveRequest($request);
         $this->carts->add($cart['cart'], $data['variant_id'], (int) $data['quantity']);
 
         return $this->snapshot($request, $cart['cart'], $cart['guest_token']);
@@ -43,7 +41,7 @@ class CartController extends Controller
     public function update(Request $request, string $item): JsonResponse
     {
         $data = $request->validate(['quantity' => ['required', 'integer', 'min:1', 'max:'.CartService::MAX_ITEM_QUANTITY]]);
-        $cart = $this->resolve($request);
+        $cart = $this->carts->resolveRequest($request);
         $this->carts->update($cart['cart'], $item, (int) $data['quantity']);
 
         return $this->snapshot($request, $cart['cart'], $cart['guest_token']);
@@ -76,19 +74,6 @@ class CartController extends Controller
         ], 'Cart merged.')->header('Cache-Control', 'no-store');
     }
 
-    /** @return array{cart: Cart, guest_token: string|null} */
-    private function resolve(Request $request): array
-    {
-        $customer = null;
-        if ($request->hasHeader('Authorization')) {
-            $customer = Auth::guard('customer')->user();
-            abort_unless($customer instanceof User, 401);
-            Gate::forUser($customer)->authorize('customer-account');
-        }
-
-        return $this->carts->resolve($customer, $request->header('X-Cart-Token'));
-    }
-
     private function snapshot(Request $request, Cart $cart, ?string $guestToken): JsonResponse
     {
         $response = $this->apiSuccess($request, $this->pricing->quote($cart), 'Cart retrieved.')->header('Cache-Control', 'no-store');
@@ -102,7 +87,7 @@ class CartController extends Controller
 
     private function remove(Request $request, ?string $item): Response
     {
-        $cart = $this->resolve($request);
+        $cart = $this->carts->resolveRequest($request);
         $this->carts->remove($cart['cart'], $item);
 
         $response = response()->noContent()->header('Cache-Control', 'no-store');

@@ -5,8 +5,13 @@ namespace App\Services\Cart;
 use App\Exceptions\ApiProblem;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\User;
+use App\Services\Promotions\CouponService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class CartService
 {
@@ -31,6 +36,35 @@ class CartService
         $cart->forceFill(['guest_token_hash' => hash('sha256', $token)])->save();
 
         return ['cart' => $cart, 'guest_token' => $token];
+    }
+
+    /** @return array{cart: Cart, guest_token: string|null} */
+    public function resolveRequest(Request $request): array
+    {
+        $customer = null;
+        if ($request->hasHeader('Authorization')) {
+            $customer = Auth::guard('customer')->user();
+            abort_unless($customer instanceof User, 401);
+            Gate::forUser($customer)->authorize('customer-account');
+        }
+
+        return $this->resolve($customer, $request->header('X-Cart-Token'));
+    }
+
+    public function setCoupon(Cart $cart, ?Coupon $coupon, CouponService $coupons): Cart
+    {
+        return DB::transaction(function () use ($cart, $coupon, $coupons): Cart {
+            $locked = $this->lock($cart);
+
+            if ($coupon !== null) {
+                $coupons->estimate($coupon, $locked, $this->pricing->quote($locked, includeCoupon: false));
+            }
+
+            $locked->coupon()->associate($coupon);
+            $locked->save();
+
+            return $locked;
+        }, 3);
     }
 
     public function forCustomer(User $customer): Cart
@@ -128,6 +162,10 @@ class CartService
                         'code' => $limitReached ? 'CART_LIMIT' : 'INSUFFICIENT_STOCK',
                     ];
                 }
+            }
+
+            if ($cart->coupon_id === null && $guest->coupon_id !== null) {
+                $cart->forceFill(['coupon_id' => $guest->coupon_id])->save();
             }
 
             $guest->delete();

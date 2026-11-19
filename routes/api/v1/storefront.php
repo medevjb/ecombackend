@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Storefront\CartController;
+use App\Http\Controllers\Api\V1\Storefront\CartCouponController;
 use App\Http\Controllers\Api\V1\Storefront\CategoryController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController;
 use App\Http\Controllers\Api\V1\Storefront\TaxonomyController;
@@ -27,4 +28,6 @@ Route::prefix('cart')->name('storefront.cart.')->middleware('throttle:60,1')->gr
     Route::delete('items/{item}', [CartController::class, 'destroy'])->name('items.destroy');
     Route::delete('items', [CartController::class, 'clear'])->name('items.clear');
     Route::post('merge', [CartController::class, 'merge'])->middleware(['auth:customer', 'can:customer-account'])->name('merge');
+    Route::post('coupon', [CartCouponController::class, 'store'])->middleware('throttle:coupon-apply')->name('coupon.store');
+    Route::delete('coupon', [CartCouponController::class, 'destroy'])->name('coupon.destroy');
 });

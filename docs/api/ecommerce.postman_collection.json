@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "E-commerce backend API",
-    "description": "Local API documentation through Phase 6. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
+    "description": "Local API documentation through Phase 7. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -5370,16 +5370,33 @@
               "query": []
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customer_access_token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Add a variant to the cart",
@@ -5410,14 +5427,7 @@
               "query": []
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customer_access_token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
             "body": {
               "mode": "raw",
@@ -5428,7 +5438,31 @@
                 }
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Empty the current cart",
@@ -5455,16 +5489,33 @@
               "query": []
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customer_access_token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Set an owned cart item quantity",
@@ -5496,14 +5547,7 @@
               "query": []
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customer_access_token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
             "body": {
               "mode": "raw",
@@ -5514,7 +5558,31 @@
                 }
               }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Remove an owned cart item",
@@ -5542,16 +5610,33 @@
               "query": []
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customer_access_token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Merge the guest cart into the current customer cart",
@@ -5599,6 +5684,519 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 200) pm.environment.unset(\"guest_cart_token\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "item": [
+        {
+          "name": "List coupons with staff filters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "List coupons with staff filters.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "20",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_direction",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "trashed",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create an inactive coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Create an inactive coupon.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{coupon_code}}\",\n  \"type\": \"percentage\",\n  \"value\": 10,\n  \"global_limit\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Read a coupon as staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Read a coupon as staff.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/{{coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "{{coupon_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update a coupon and its eligibility rules",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Update a coupon and its eligibility rules.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/{{coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "{{coupon_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": 15,\n  \"per_customer_limit\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Soft-delete a coupon",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Soft-delete a coupon.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/{{coupon_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "{{coupon_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate or deactivate a coupon",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Activate or deactivate a coupon.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/{{coupon_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "{{coupon_id}}",
+                "status"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Restore a coupon as inactive",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Restore a coupon as inactive.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/{{coupon_id}}/restore",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "{{coupon_id}}",
+                "restore"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change the status of selected coupons",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Change the status of selected coupons.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/coupons/bulk-actions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "coupons",
+                "bulk-actions"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"activate\",\n  \"ids\": [\n    \"{{coupon_id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Apply a coupon estimate to the cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Apply a coupon estimate to the cart.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/coupon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "coupon"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{coupon_code}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove the provisional coupon from the cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Remove the provisional coupon from the cart.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/coupon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "coupon"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const account = pm.environment.get(\"customer_access_token\");",
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (pm.environment.get(\"use_customer_cart\") === \"true\" && account) pm.request.headers.upsert({ key: \"Authorization\", value: \"Bearer \" + account });",
+                  "if (guest) pm.request.headers.upsert({ key: \"X-Cart-Token\", value: guest });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.response.headers.get(\"X-Cart-Token\");",
+                  "if (token) pm.environment.set(\"guest_cart_token\", token);"
                 ]
               }
             }

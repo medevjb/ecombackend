@@ -3,10 +3,12 @@
 namespace App\Services\Cart;
 
 use App\Enums\ProductStatus;
+use App\Exceptions\ApiProblem;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductVariant;
 use App\Services\Catalog\ProductDiscovery;
+use App\Services\Promotions\CouponService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -14,7 +16,7 @@ class CartPricing
 {
     private const int MAX_SAFE_AMOUNT = 9_007_199_254_740_991;
 
-    public function __construct(private readonly ProductDiscovery $discovery) {}
+    public function __construct(private readonly ProductDiscovery $discovery, private readonly CouponService $coupons) {}
 
     /** @return Builder<ProductVariant> */
     public function eligibleVariants(): Builder
@@ -40,7 +42,7 @@ class CartPricing
     }
 
     /** @return array<string, mixed> */
-    public function quote(Cart $cart): array
+    public function quote(Cart $cart, bool $includeCoupon = true): array
     {
         $items = $cart->items()->with('variant')->orderBy('id')->get();
         $offers = $this->offers(array_values($items->map(fn (CartItem $item): int => $item->product_variant_id)->all()));
@@ -77,12 +79,30 @@ class CartPricing
             ];
         }
 
-        return [
+        $quote = [
             'id' => $cart->public_id,
             'items' => $lines,
             'subtotal_amount' => $subtotal,
             'currency' => 'USD',
             'conflicts' => $conflicts,
         ];
+
+        $coupon = $includeCoupon ? $cart->coupon : null;
+        $quote['coupon'] = null;
+        $quote['discount_amount'] = 0;
+
+        if ($coupon !== null) {
+            try {
+                $amount = $this->coupons->estimate($coupon, $cart, $quote);
+                $quote['coupon'] = ['code' => $coupon->code, 'status' => 'applied'];
+                $quote['discount_amount'] = $amount;
+            } catch (ApiProblem $problem) {
+                $quote['coupon'] = ['code' => $coupon->code, 'status' => 'invalid', 'error_code' => $problem->errorCode];
+            }
+        }
+
+        $quote['total_amount'] = $subtotal - $quote['discount_amount'];
+
+        return $quote;
     }
 }

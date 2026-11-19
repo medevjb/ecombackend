@@ -4631,6 +4631,429 @@ paths:
                   schema:
                       type: string
                       pattern: '^[a-f0-9]{64}$'
+    /api/v1/admin/coupons:
+        get:
+            operationId: listCoupons
+            summary: 'List coupons with staff filters'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List coupons with staff filters.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Coupon'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 40
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: type
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - percentage
+                          - fixed
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - code
+                          - created_at
+                          - ends_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createCoupon
+            summary: 'Create an inactive coupon'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create an inactive coupon.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Coupon'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateCoupon'
+    '/api/v1/admin/coupons/{coupon}':
+        get:
+            operationId: getCoupon
+            summary: 'Read a coupon as staff'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read a coupon as staff.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Coupon'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: coupon
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateCoupon
+            summary: 'Update a coupon and its eligibility rules'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update a coupon and its eligibility rules.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Coupon'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CouponInput'
+            parameters:
+                - name: coupon
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteCoupon
+            summary: 'Soft-delete a coupon'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete a coupon.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: coupon
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/coupons/{coupon}/status':
+        patch:
+            operationId: updateCouponStatus
+            summary: 'Activate or deactivate a coupon'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Activate or deactivate a coupon.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Coupon'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: coupon
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/coupons/{coupon}/restore':
+        post:
+            operationId: restoreCoupon
+            summary: 'Restore a coupon as inactive'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore a coupon as inactive.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Coupon'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: coupon
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/coupons/bulk-actions:
+        post:
+            operationId: bulkCoupons
+            summary: 'Change the status of selected coupons'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Change the status of selected coupons.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CouponBulkStatus'
+    /api/v1/cart/coupon:
+        post:
+            operationId: applyCartCoupon
+            summary: 'Apply a coupon estimate to the cart'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply a coupon estimate to the cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartQuote'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ApplyCartCoupon'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+        delete:
+            operationId: removeCartCoupon
+            summary: 'Remove the provisional coupon from the cart'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Remove the provisional coupon from the cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartQuote'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
 components:
     securitySchemes:
         BearerAuth:
@@ -5932,6 +6355,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/CartLine'
+                coupon:
+                    anyOf:
+                        - $ref: '#/components/schemas/CartCoupon'
+                        - type: 'null'
+                discount_amount:
+                    type: integer
+                    minimum: 0
+                total_amount:
+                    type: integer
+                    minimum: 0
                 subtotal_amount:
                     type: integer
                     minimum: 0
@@ -6054,3 +6487,252 @@ components:
             required:
                 - status
                 - conflicts
+        Coupon:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                code:
+                    type: string
+                    maxLength: 40
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9_-]*$'
+                type:
+                    type: string
+                    enum:
+                        - percentage
+                        - fixed
+                value:
+                    type: number
+                    description: 'Percentage (0.01 to 100, up to two decimals) or a fixed USD minor-unit integer.'
+                minimum_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                currency:
+                    type:
+                        - string
+                        - 'null'
+                    enum:
+                        - USD
+                        - null
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                global_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                per_customer_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                product_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                category_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                status:
+                    type: string
+                    enum:
+                        - active
+                        - inactive
+                deleted_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+            required:
+                - id
+                - code
+                - type
+                - value
+                - currency
+                - status
+        CouponInput:
+            type: object
+            properties:
+                code:
+                    type: string
+                    maxLength: 40
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9_-]*$'
+                type:
+                    type: string
+                    enum:
+                        - percentage
+                        - fixed
+                value:
+                    type: number
+                    description: 'Percentage (0.01 to 100, up to two decimals) or a fixed USD minor-unit integer.'
+                minimum_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                currency:
+                    type:
+                        - string
+                        - 'null'
+                    enum:
+                        - USD
+                        - null
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                global_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                per_customer_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                product_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                category_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+        CreateCoupon:
+            type: object
+            properties:
+                code:
+                    type: string
+                    maxLength: 40
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9_-]*$'
+                type:
+                    type: string
+                    enum:
+                        - percentage
+                        - fixed
+                value:
+                    type: number
+                    description: 'Percentage (0.01 to 100, up to two decimals) or a fixed USD minor-unit integer.'
+                minimum_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                currency:
+                    type:
+                        - string
+                        - 'null'
+                    enum:
+                        - USD
+                        - null
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                global_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                per_customer_limit:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 1
+                product_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                category_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+            required:
+                - code
+                - type
+                - value
+        CouponBulkStatus:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                    minItems: 1
+                action:
+                    type: string
+                    enum:
+                        - activate
+                        - deactivate
+            required:
+                - ids
+                - action
+        ApplyCartCoupon:
+            type: object
+            properties:
+                code:
+                    type: string
+                    maxLength: 40
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9_-]*$'
+            required:
+                - code
+        CartCoupon:
+            type: object
+            properties:
+                code:
+                    type: string
+                    maxLength: 40
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9_-]*$'
+                status:
+                    type: string
+                    enum:
+                        - applied
+                        - invalid
+                error_code:
+                    type: string
+            required:
+                - code
+                - status

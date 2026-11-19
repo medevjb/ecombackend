@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Admin\AttributeValueController;
 use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\BrandController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
+use App\Http\Controllers\Api\V1\Admin\CouponController;
 use App\Http\Controllers\Api\V1\Admin\InventoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
@@ -126,4 +127,15 @@ Route::prefix('admin/inventory')->name('admin.inventory.')->middleware('auth:sta
     Route::get('/', [InventoryController::class, 'index'])->can('inventory.view')->name('index');
     Route::get('movements', [InventoryController::class, 'movements'])->can('inventory.view')->name('movements.index');
     Route::post('adjustments', [InventoryController::class, 'adjust'])->can('inventory.adjust')->name('adjustments.store');
+});
+
+Route::prefix('admin/coupons')->name('admin.coupons.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [CouponController::class, 'index'])->can('coupons.view')->name('index');
+    Route::get('{coupon}', [CouponController::class, 'show'])->can('coupons.view')->name('show');
+    Route::post('/', [CouponController::class, 'store'])->can('coupons.manage')->name('store');
+    Route::patch('{coupon}', [CouponController::class, 'update'])->can('coupons.manage')->name('update');
+    Route::patch('{coupon}/status', [CouponController::class, 'status'])->can('coupons.manage')->name('status');
+    Route::delete('{coupon}', [CouponController::class, 'destroy'])->can('coupons.manage')->name('destroy');
+    Route::post('{coupon}/restore', [CouponController::class, 'restore'])->can('coupons.manage')->name('restore');
+    Route::post('bulk-actions', [CouponController::class, 'bulk'])->can('coupons.manage')->name('bulk');
 });
