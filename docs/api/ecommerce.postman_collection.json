@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "E-commerce backend API",
-    "description": "Local API documentation through Phase 4. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
+    "description": "Local API documentation through Phase 5. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -4955,6 +4955,188 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"ids\": [\n    \"{{image_id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "List stock and low-stock counts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "List stock and low-stock counts.\n\nDocumented HTTP responses: 200, 401, 403, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/inventory",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "inventory"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "per_page",
+                  "value": "20",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "low_stock",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List immutable inventory movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "List immutable inventory movements.\n\nDocumented HTTP responses: 200, 401, 403, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/inventory/movements",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "inventory",
+                "movements"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "per_page",
+                  "value": "20",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "variant_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "type",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record an idempotent stock adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotency_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Record an idempotent stock adjustment.\n\nDocumented HTTP responses: 201, 400, 401, 403, 404, 409, 422, 200.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/inventory/adjustments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "inventory",
+                "adjustments"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variant_id\": \"{{variant_id}}\",\n  \"delta\": 5,\n  \"reason\": \"Stock count correction\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

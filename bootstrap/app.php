@@ -1,11 +1,14 @@
 <?php
 
+use App\Exceptions\ApiProblem;
 use App\Http\Middleware\ApiResponseEnvelope;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ValidateApiJson;
+use App\Http\Responses\ApiResponseFactory;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(fn (ApiProblem $exception, Request $request): ?JsonResponse => $request->is('api', 'api/*')
+                ? app(ApiResponseFactory::class)->failure($request, $exception->errorCode, $exception->getMessage(), $exception->getStatusCode())
+                : null);
+
         $exceptions->report(function (Throwable $exception): ?bool {
             if (! request()->is('api', 'api/*')) {
                 return null;

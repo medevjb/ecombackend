@@ -58,6 +58,10 @@ class ProductVariants
                 $fields = array_keys($variant->getDirty());
                 $variant->forceFill(['updated_by' => $actor->id])->save();
 
+                if ($variantId === null) {
+                    $variant->inventory()->create();
+                }
+
                 if (isset($options)) {
                     $variant->values()->sync($options);
                     $fields[] = 'options';

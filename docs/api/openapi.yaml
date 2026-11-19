@@ -4003,6 +4003,196 @@ paths:
                           type: string
                           pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
                       maxItems: 25
+    /api/v1/admin/inventory:
+        get:
+            operationId: listInventory
+            summary: 'List stock and low-stock counts'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List stock and low-stock counts.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Inventory'
+                                          meta:
+                                              type: object
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                                                  low_stock_count:
+                                                      type: integer
+                                                      minimum: 0
+                                                      maximum: 4294967295
+                                                  low_stock_threshold:
+                                                      type: integer
+                                                      minimum: 0
+                                                      maximum: 4294967295
+                                              required:
+                                                  - pagination
+                                                  - low_stock_count
+                                                  - low_stock_threshold
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: low_stock
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+    /api/v1/admin/inventory/movements:
+        get:
+            operationId: listInventoryMovements
+            summary: 'List immutable inventory movements'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List immutable inventory movements.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/InventoryMovement'
+                                          meta:
+                                              type: object
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                                              required:
+                                                  - pagination
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: variant_id
+                  in: query
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: type
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - adjustment
+                          - payment
+                          - restoration
+    /api/v1/admin/inventory/adjustments:
+        post:
+            operationId: adjustInventory
+            summary: 'Record an idempotent stock adjustment'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Record an idempotent stock adjustment.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/InventoryMovement'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                200:
+                    description: 'This request replays an adjustment already recorded for the idempotency key.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/InventoryMovement'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateInventoryAdjustment'
+            parameters:
+                - name: Idempotency-Key
+                  in: header
+                  required: true
+                  schema:
+                      type: string
+                      maxLength: 128
+                      pattern: '^[A-Za-z0-9._:-]+$'
 components:
     securitySchemes:
         BearerAuth:
@@ -5067,3 +5257,93 @@ components:
                     maxLength: 255
                 primary:
                     type: boolean
+        Inventory:
+            type: object
+            properties:
+                variant_id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                sku:
+                    type: string
+                product_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                on_hand:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                reserved:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                available:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                low_stock:
+                    type: boolean
+            required:
+                - variant_id
+                - sku
+                - product_id
+                - on_hand
+                - reserved
+                - available
+                - low_stock
+        InventoryMovement:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                type:
+                    type: string
+                    enum:
+                        - adjustment
+                        - payment
+                        - restoration
+                delta:
+                    type: integer
+                on_hand_after:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                reason:
+                    type: string
+                created_at:
+                    type: string
+                    format: date-time
+                variant_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+            required:
+                - id
+                - type
+                - delta
+                - on_hand_after
+                - reason
+                - created_at
+                - variant_id
+        CreateInventoryAdjustment:
+            type: object
+            properties:
+                variant_id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                delta:
+                    type: integer
+                    minimum: -4294967295
+                    maximum: 4294967295
+                    not:
+                        const: 0
+                reason:
+                    type: string
+                    maxLength: 500
+            required:
+                - variant_id
+                - delta
+                - reason

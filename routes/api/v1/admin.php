@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Admin\AttributeValueController;
 use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\BrandController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
+use App\Http\Controllers\Api\V1\Admin\InventoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
@@ -119,4 +120,10 @@ Route::prefix('admin/products/{product}/images')->name('admin.products.images.')
     Route::patch('{image}', [ProductImageController::class, 'update'])->can('products.update')->name('update');
     Route::post('{image}/replace', [ProductImageController::class, 'replace'])->can('products.update')->name('replace');
     Route::delete('{image}', [ProductImageController::class, 'destroy'])->can('products.delete')->name('destroy');
+});
+
+Route::prefix('admin/inventory')->name('admin.inventory.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [InventoryController::class, 'index'])->can('inventory.view')->name('index');
+    Route::get('movements', [InventoryController::class, 'movements'])->can('inventory.view')->name('movements.index');
+    Route::post('adjustments', [InventoryController::class, 'adjust'])->can('inventory.adjust')->name('adjustments.store');
 });

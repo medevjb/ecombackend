@@ -59,14 +59,16 @@ class ProductCatalog
                     $changes[] = 'category_ids';
                 }
                 if ($id === null) {
-                    $product->variants()->make()->forceFill([
+                    $variant = $product->variants()->make()->forceFill([
                         'sku' => $data['sku'],
                         'is_default' => true,
                         'combination_key' => hash('sha256', ''),
                         'status' => CatalogStatus::Active,
                         'created_by' => $actor->id,
                         'updated_by' => $actor->id,
-                    ])->save();
+                    ]);
+                    $variant->save();
+                    $variant->inventory()->create();
                 }
 
                 $this->audit($product, $id === null ? 'product.created' : 'product.updated', ['changed_fields' => $changes]);

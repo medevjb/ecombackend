@@ -30,12 +30,14 @@ class ProductSeeder extends Seeder
                 if ($product->wasRecentlyCreated) {
                     $product->forceFill(['brand_id' => $brand->id, 'status' => ProductStatus::Active, 'published_at' => now()])->save();
                     $product->categories()->attach($category);
-                    $product->variants()->make()->forceFill([
+                    $variant = $product->variants()->make()->forceFill([
                         'sku' => 'DEMO-'.($index + 1),
                         'is_default' => true,
                         'status' => CatalogStatus::Active,
                         'combination_key' => hash('sha256', ''),
-                    ])->save();
+                    ]);
+                    $variant->save();
+                    $variant->inventory()->create();
                 }
             }
         });
