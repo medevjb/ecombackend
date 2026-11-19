@@ -68,6 +68,7 @@ jobs:
           php artisan migrate --no-interaction
           php artisan migrate:rollback --no-interaction
           php artisan migrate --no-interaction
+          php artisan db:seed --no-interaction
 
       - name: Check PHP style and types
         run: |

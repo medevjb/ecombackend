@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AttributeController;
+use App\Http\Controllers\Api\V1\Admin\AttributeValueController;
 use App\Http\Controllers\Api\V1\Admin\AuditLogController;
+use App\Http\Controllers\Api\V1\Admin\BrandController;
+use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\RoleManagementController;
 use App\Http\Controllers\Api\V1\Admin\StaffManagementController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
@@ -52,3 +56,36 @@ Route::prefix('admin')->name('admin.')->middleware('auth:staff')->group(function
     Route::get('activity-logs', [AuditLogController::class, 'index'])->can('audit.view')->name('activity-logs.index');
     Route::get('audit-logs', [AuditLogController::class, 'index'])->can('audit.view')->name('audit-logs.index');
 });
+
+Route::prefix('admin/categories')->name('admin.categories.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [CategoryController::class, 'index'])->can('categories.view')->name('index');
+    Route::post('/', [CategoryController::class, 'store'])->can('categories.create')->name('store');
+    Route::post('bulk-actions', [CategoryController::class, 'bulk'])->can('categories.view')->name('bulk');
+    Route::patch('reorder', [CategoryController::class, 'reorder'])->can('categories.update')->name('reorder');
+    Route::get('{category}', [CategoryController::class, 'show'])->can('categories.view')->name('show');
+    Route::patch('{category}', [CategoryController::class, 'update'])->can('categories.update')->name('update');
+    Route::patch('{category}/status', [CategoryController::class, 'status'])->can('categories.update')->name('status');
+    Route::delete('{category}', [CategoryController::class, 'destroy'])->can('categories.delete')->name('destroy');
+    Route::post('{category}/restore', [CategoryController::class, 'restore'])->can('categories.delete')->name('restore');
+});
+
+$taxonomies = [
+    ['brands', 'brands', 'brand', BrandController::class, 'brands'],
+    ['attributes', 'attributes', 'attribute', AttributeController::class, 'attributes'],
+    ['attributes/{attribute}/values', 'attribute-values', 'value', AttributeValueController::class, 'attributes'],
+];
+
+foreach ($taxonomies as [$prefix, $name, $parameter, $controller, $permission]) {
+    Route::prefix('admin/'.$prefix)->name('admin.'.$name.'.')->middleware('auth:staff')->group(function () use ($parameter, $controller, $permission): void {
+        $record = '{'.$parameter.'}';
+        Route::get('/', [$controller, 'index'])->can($permission.'.view')->name('index');
+        Route::post('/', [$controller, 'store'])->can($permission.'.create')->name('store');
+        Route::post('bulk-actions', [$controller, 'bulk'])->can($permission.'.view')->name('bulk');
+        Route::patch('reorder', [$controller, 'reorder'])->can($permission.'.update')->name('reorder');
+        Route::get($record, [$controller, 'show'])->can($permission.'.view')->name('show');
+        Route::patch($record, [$controller, 'update'])->can($permission.'.update')->name('update');
+        Route::patch($record.'/status', [$controller, 'status'])->can($permission.'.update')->name('status');
+        Route::delete($record, [$controller, 'destroy'])->can($permission.'.delete')->name('destroy');
+        Route::post($record.'/restore', [$controller, 'restore'])->can($permission.'.delete')->name('restore');
+    });
+}

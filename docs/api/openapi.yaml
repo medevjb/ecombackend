@@ -1295,6 +1295,1565 @@ paths:
                     $ref: '#/components/responses/Error'
                 422:
                     $ref: '#/components/responses/Error'
+    /api/v1/admin/categories:
+        get:
+            operationId: listAdminCategory
+            summary: 'List admin category records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List admin category records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Category'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - name
+                          - slug
+                          - sort_order
+                          - created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createCategory
+            summary: 'Create category'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CategoryCreate'
+    '/api/v1/admin/categories/{category}':
+        get:
+            operationId: getAdminCategory
+            summary: 'Read admin category'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read admin category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: category
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateCategory
+            summary: 'Update category'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CategoryUpdate'
+            parameters:
+                - name: category
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteCategory
+            summary: 'Soft-delete category'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: category
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/categories/{category}/restore':
+        post:
+            operationId: restoreCategory
+            summary: 'Restore category'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: category
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/categories/{category}/status':
+        patch:
+            operationId: setCategoryStatus
+            summary: 'Update status for category'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update status for category.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: category
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/categories/reorder:
+        patch:
+            operationId: reorderCategory
+            summary: 'Reorder category records'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Reorder category records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CategoryReorder'
+    /api/v1/admin/categories/bulk-actions:
+        post:
+            operationId: bulkCategory
+            summary: 'Apply bulk action to category records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply bulk action to category records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogBulkAction'
+    /api/v1/admin/brands:
+        get:
+            operationId: listAdminBrand
+            summary: 'List admin brand records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List admin brand records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/TaxonomyTerm'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - name
+                          - slug
+                          - sort_order
+                          - created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createBrand
+            summary: 'Create brand'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BrandCreate'
+    '/api/v1/admin/brands/{brand}':
+        get:
+            operationId: getAdminBrand
+            summary: 'Read admin brand'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read admin brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: brand
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateBrand
+            summary: 'Update brand'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BrandUpdate'
+            parameters:
+                - name: brand
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteBrand
+            summary: 'Soft-delete brand'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: brand
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/brands/{brand}/restore':
+        post:
+            operationId: restoreBrand
+            summary: 'Restore brand'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: brand
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/brands/{brand}/status':
+        patch:
+            operationId: setBrandStatus
+            summary: 'Update status for brand'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update status for brand.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: brand
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/brands/reorder:
+        patch:
+            operationId: reorderBrand
+            summary: 'Reorder brand records'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Reorder brand records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogReorder'
+    /api/v1/admin/brands/bulk-actions:
+        post:
+            operationId: bulkBrand
+            summary: 'Apply bulk action to brand records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply bulk action to brand records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogBulkAction'
+    /api/v1/admin/attributes:
+        get:
+            operationId: listAdminAttribute
+            summary: 'List admin attribute records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List admin attribute records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/TaxonomyTerm'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - name
+                          - slug
+                          - sort_order
+                          - created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createAttribute
+            summary: 'Create attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TermCreate'
+    '/api/v1/admin/attributes/{attribute}':
+        get:
+            operationId: getAdminAttribute
+            summary: 'Read admin attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read admin attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateAttribute
+            summary: 'Update attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TermUpdate'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteAttribute
+            summary: 'Soft-delete attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/restore':
+        post:
+            operationId: restoreAttribute
+            summary: 'Restore attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/status':
+        patch:
+            operationId: setAttributeStatus
+            summary: 'Update status for attribute'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update status for attribute.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/attributes/reorder:
+        patch:
+            operationId: reorderAttribute
+            summary: 'Reorder attribute records'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Reorder attribute records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogReorder'
+    /api/v1/admin/attributes/bulk-actions:
+        post:
+            operationId: bulkAttribute
+            summary: 'Apply bulk action to attribute records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply bulk action to attribute records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogBulkAction'
+    '/api/v1/admin/attributes/{attribute}/values':
+        get:
+            operationId: listAdminAttributeValue
+            summary: 'List admin attribute value records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List admin attribute value records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/TaxonomyTerm'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - name
+                          - slug
+                          - sort_order
+                          - created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createAttributeValue
+            summary: 'Create attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TermCreate'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/values/{value}':
+        get:
+            operationId: getAdminAttributeValue
+            summary: 'Read admin attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read admin attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: value
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateAttributeValue
+            summary: 'Update attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TermUpdate'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: value
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteAttributeValue
+            summary: 'Soft-delete attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: value
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/values/{value}/restore':
+        post:
+            operationId: restoreAttributeValue
+            summary: 'Restore attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: value
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/values/{value}/status':
+        patch:
+            operationId: setAttributeValueStatus
+            summary: 'Update status for attribute value'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update status for attribute value.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TaxonomyTerm'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: value
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/values/reorder':
+        patch:
+            operationId: reorderAttributeValue
+            summary: 'Reorder attribute value records'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Reorder attribute value records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogReorder'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/attributes/{attribute}/values/bulk-actions':
+        post:
+            operationId: bulkAttributeValue
+            summary: 'Apply bulk action to attribute value records'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply bulk action to attribute value records.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogBulkAction'
+            parameters:
+                - name: attribute
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/categories:
+        get:
+            operationId: listCategories
+            summary: 'List visible category trees'
+            responses:
+                200:
+                    description: 'List visible category trees.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Category'
+    '/api/v1/categories/{slug}':
+        get:
+            operationId: getCategory
+            summary: 'Read a visible category by slug'
+            responses:
+                200:
+                    description: 'Read a visible category by slug.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Category'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+    /api/v1/brands:
+        get:
+            operationId: listBrands
+            summary: 'List active brands'
+            responses:
+                200:
+                    description: 'List active brands.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/TaxonomyTerm'
+    /api/v1/attributes:
+        get:
+            operationId: listAttributes
+            summary: 'List active attributes and options'
+            responses:
+                200:
+                    description: 'List active attributes and options.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/TaxonomyTerm'
 components:
     securitySchemes:
         BearerAuth:
@@ -1680,3 +3239,329 @@ components:
                 - $ref: '#/components/schemas/AccountPassword'
                 - $ref: '#/components/schemas/UpdateCustomerProfile'
                 - $ref: '#/components/schemas/ReplaceStaffRoles'
+        Category:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                status:
+                    type: string
+                    enum:
+                        - active
+                        - inactive
+                sort_order:
+                    type: integer
+                deleted_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                parent_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                description:
+                    type:
+                        - string
+                        - 'null'
+                image_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Category'
+            required:
+                - id
+                - name
+                - slug
+                - status
+                - sort_order
+        TaxonomyTerm:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                status:
+                    type: string
+                    enum:
+                        - active
+                        - inactive
+                sort_order:
+                    type: integer
+                deleted_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                description:
+                    type:
+                        - string
+                        - 'null'
+                logo_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+                values:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TaxonomyTerm'
+            required:
+                - id
+                - name
+                - slug
+                - status
+                - sort_order
+        CategoryCreate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                parent_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                description:
+                    type:
+                        - string
+                        - 'null'
+                image_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+            required:
+                - name
+                - slug
+        CategoryUpdate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                parent_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                description:
+                    type:
+                        - string
+                        - 'null'
+                image_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+        BrandCreate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                description:
+                    type:
+                        - string
+                        - 'null'
+                logo_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+            required:
+                - name
+                - slug
+        BrandUpdate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                description:
+                    type:
+                        - string
+                        - 'null'
+                logo_url:
+                    type:
+                        - string
+                        - 'null'
+                    format: uri
+                    maxLength: 2048
+        TermCreate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+            required:
+                - name
+                - slug
+        TermUpdate:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    maxLength: 255
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        CatalogStatusUpdate:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - active
+                        - inactive
+            required:
+                - status
+        CatalogReorder:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    maxItems: 1000
+                    uniqueItems: true
+            required:
+                - ids
+        CategoryReorder:
+            allOf:
+                - $ref: '#/components/schemas/CatalogReorder'
+                - type: object
+                  properties:
+                      parent_id:
+                          type:
+                              - string
+                              - 'null'
+                          pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        CatalogBulkAction:
+            type: object
+            properties:
+                action:
+                    type: string
+                    enum:
+                        - activate
+                        - deactivate
+                        - delete
+                        - restore
+                ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    maxItems: 100
+                    minItems: 1
+                    uniqueItems: true
+            required:
+                - action
+                - ids
+        CatalogBulkResult:
+            type: object
+            properties:
+                succeeded_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                failed:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            id:
+                                type: string
+                                pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                            code:
+                                type: string
+                        required:
+                            - id
+                            - code
+                counts:
+                    type: object
+                    properties:
+                        succeeded:
+                            type: integer
+                        failed:
+                            type: integer
+                    required:
+                        - succeeded
+                        - failed
+            required:
+                - succeeded_ids
+                - failed
+                - counts

@@ -17,9 +17,12 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(StaffAccessSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (app()->environment('local', 'testing')) {
+            $this->call([CategorySeeder::class, BrandSeeder::class, ProductAttributeSeeder::class]);
+
+            if (! User::query()->where('email', 'test@example.com')->exists()) {
+                User::factory()->create(['name' => 'Test User', 'email' => 'test@example.com']);
+            }
+        }
     }
 }
