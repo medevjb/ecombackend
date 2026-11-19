@@ -6078,6 +6078,945 @@ paths:
                       minimum: 1
                       maximum: 100
                       default: 20
+    '/api/v1/admin/banners':
+        get:
+            operationId: listBanner
+            summary: List staff banner
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List staff banner.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/BannerRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createBanner
+            summary: Create banner
+            security:
+                - BearerAuth: []
+            responses:
+                '201':
+                    description: Create banner.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/BannerRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/CreateBanner'
+    '/api/v1/admin/banners/{content}':
+        get:
+            operationId: readBanner
+            summary: Read banner
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read banner.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/BannerRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        patch:
+            operationId: updateBanner
+            summary: Update banner
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Update banner.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/BannerRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateBanner'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        delete:
+            operationId: deleteBanner
+            summary: Delete banner
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Delete banner.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/homepage-sections':
+        get:
+            operationId: listHomepageSection
+            summary: List staff homepage section
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List staff homepage section.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/HomepageSectionRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createHomepageSection
+            summary: Create homepage section
+            security:
+                - BearerAuth: []
+            responses:
+                '201':
+                    description: Create homepage section.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/HomepageSectionRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/CreateHomepageSection'
+    '/api/v1/admin/homepage-sections/{content}':
+        get:
+            operationId: readHomepageSection
+            summary: Read homepage section
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read homepage section.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/HomepageSectionRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        patch:
+            operationId: updateHomepageSection
+            summary: Update homepage section
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Update homepage section.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/HomepageSectionRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateHomepageSection'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        delete:
+            operationId: deleteHomepageSection
+            summary: Delete homepage section
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Delete homepage section.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/navigation':
+        get:
+            operationId: listNavigationItem
+            summary: List staff navigation item
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List staff navigation item.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/NavigationItemRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createNavigationItem
+            summary: Create navigation item
+            security:
+                - BearerAuth: []
+            responses:
+                '201':
+                    description: Create navigation item.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/NavigationItemRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/CreateNavigationItem'
+    '/api/v1/admin/navigation/{content}':
+        get:
+            operationId: readNavigationItem
+            summary: Read navigation item
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read navigation item.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/NavigationItemRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        patch:
+            operationId: updateNavigationItem
+            summary: Update navigation item
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Update navigation item.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/NavigationItemRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateNavigationItem'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        delete:
+            operationId: deleteNavigationItem
+            summary: Delete navigation item
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Delete navigation item.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/testimonials':
+        get:
+            operationId: listTestimonial
+            summary: List staff testimonial
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List staff testimonial.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/TestimonialRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createTestimonial
+            summary: Create testimonial
+            security:
+                - BearerAuth: []
+            responses:
+                '201':
+                    description: Create testimonial.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/TestimonialRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/CreateTestimonial'
+    '/api/v1/admin/testimonials/{content}':
+        get:
+            operationId: readTestimonial
+            summary: Read testimonial
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read testimonial.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/TestimonialRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        patch:
+            operationId: updateTestimonial
+            summary: Update testimonial
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Update testimonial.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/TestimonialRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateTestimonial'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        delete:
+            operationId: deleteTestimonial
+            summary: Delete testimonial
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Delete testimonial.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: content
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/site-settings':
+        get:
+            operationId: getAdminSiteSettings
+            summary: Read staff site settings
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read staff site settings.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/SiteSettingsRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+        patch:
+            operationId: updateSiteSettings
+            summary: Replace public site settings
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Replace public site settings.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/SiteSettingsRecord'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateSiteSettings'
+    '/api/v1/admin/newsletter-subscribers':
+        get:
+            operationId: listNewsletter
+            summary: List consent and suppression records
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List consent and suppression records.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/NewsletterSubscriber'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: active
+                  in: query
+                  schema:
+                      type: boolean
+    '/api/v1/storefront/home':
+        get:
+            operationId: getStorefrontHome
+            summary: Read published homepage sections and marketing content
+            security: []
+            responses:
+                '200':
+                    description: Read published homepage sections and marketing content.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/StorefrontHome'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+    '/api/v1/storefront/navigation':
+        get:
+            operationId: getStorefrontNav
+            summary: Read published header footer and social links
+            security: []
+            responses:
+                '200':
+                    description: Read published header footer and social links.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/StorefrontNavigation'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+    '/api/v1/storefront/settings':
+        get:
+            operationId: getPublicSiteSettings
+            summary: Read site metadata and contact information
+            security: []
+            responses:
+                '200':
+                    description: Read site metadata and contact information.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/SiteSettings'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+    '/api/v1/newsletter/subscribe':
+        post:
+            operationId: subscribeNewsletter
+            summary: Submit newsletter consent
+            security: []
+            responses:
+                '202':
+                    description: Submit newsletter consent.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: 'null'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/SubscribeNewsletter'
+    '/api/v1/newsletter/unsubscribe':
+        post:
+            operationId: unsubscribeNewsletter
+            summary: Suppress a subscriber using the mailed code
+            security: []
+            responses:
+                '200':
+                    description: Suppress a subscriber using the mailed code.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: 'null'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UnsubscribeNewsletter'
 components:
     securitySchemes:
         BearerAuth:
@@ -6112,6 +7051,616 @@ components:
                                         email: [The email field is required.]
                                 request_id: req_01KB8AK2AP4NH2PWRHDCJ9S2NX
     schemas:
+        BannerData:
+            type: object
+            properties:
+                placement:
+                    type: string
+                    enum:
+                        - announcement
+                        - hero
+                        - promotion
+                title:
+                    type: string
+                body:
+                    type:
+                        - string
+                        - 'null'
+                image_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                image_alt:
+                    type:
+                        - string
+                        - 'null'
+                link_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                link_label:
+                    type:
+                        - string
+                        - 'null'
+                stats:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            label:
+                                type: string
+                            value:
+                                type: string
+                        required:
+                            - label
+                            - value
+            required:
+                - placement
+                - title
+        BannerRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/BannerData'
+            required:
+                - id
+                - key
+                - sort_order
+                - data
+        CreateBanner:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/BannerData'
+            required:
+                - key
+                - data
+        UpdateBanner:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/BannerData'
+        HomepageSectionData:
+            type: object
+            properties:
+                title:
+                    type: string
+                strategy:
+                    type: string
+                    enum:
+                        - new_arrivals
+                        - top_selling
+                        - curated
+                        - categories
+                        - brands
+                        - tiles
+                limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 24
+                items:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            reference_id:
+                                type: string
+                                format: ulid
+                            title:
+                                type:
+                                    - string
+                                    - 'null'
+                            image_url:
+                                type: string
+                                maxLength: 2048
+                                description: HTTP(S) URL or an absolute path within the storefront.
+                            image_alt:
+                                type:
+                                    - string
+                                    - 'null'
+                            link_url:
+                                type: string
+                                maxLength: 2048
+                                description: HTTP(S) URL or an absolute path within the storefront.
+            required:
+                - title
+                - strategy
+        HomepageSectionRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/HomepageSectionData'
+            required:
+                - id
+                - key
+                - sort_order
+                - data
+        CreateHomepageSection:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/HomepageSectionData'
+            required:
+                - key
+                - data
+        UpdateHomepageSection:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/HomepageSectionData'
+        NavigationItemData:
+            type: object
+            properties:
+                placement:
+                    type: string
+                    enum:
+                        - header
+                        - footer
+                        - social
+                column:
+                    type:
+                        - string
+                        - 'null'
+                label:
+                    type: string
+                url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+            required:
+                - placement
+                - label
+                - url
+        NavigationItemRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/NavigationItemData'
+            required:
+                - id
+                - key
+                - sort_order
+                - data
+        CreateNavigationItem:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/NavigationItemData'
+            required:
+                - key
+                - data
+        UpdateNavigationItem:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/NavigationItemData'
+        TestimonialData:
+            type: object
+            properties:
+                author:
+                    type: string
+                quote:
+                    type: string
+                source:
+                    type: string
+                    enum:
+                        - editorial
+                        - customer_submission
+                image_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                image_alt:
+                    type:
+                        - string
+                        - 'null'
+            required:
+                - author
+                - quote
+                - source
+        TestimonialRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/TestimonialData'
+            required:
+                - id
+                - key
+                - sort_order
+                - data
+        CreateTestimonial:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/TestimonialData'
+            required:
+                - key
+                - data
+        UpdateTestimonial:
+            type: object
+            properties:
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/TestimonialData'
+        SiteSettings:
+            type: object
+            properties:
+                name:
+                    type:
+                        - string
+                        - 'null'
+                logo_alt:
+                    type:
+                        - string
+                        - 'null'
+                newsletter_title:
+                    type:
+                        - string
+                        - 'null'
+                newsletter_copy:
+                    type:
+                        - string
+                        - 'null'
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+                copyright:
+                    type:
+                        - string
+                        - 'null'
+                logo_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                image_fallback_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                support_url:
+                    type: string
+                    maxLength: 2048
+                    description: HTTP(S) URL or an absolute path within the storefront.
+                support_email:
+                    type: string
+                    format: email
+        SiteSettingsRecord:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                key:
+                    type: string
+                sort_order:
+                    type: integer
+                published:
+                    type: boolean
+                starts_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                ends_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                data:
+                    '$ref': '#/components/schemas/SiteSettings'
+        UpdateSiteSettings:
+            type: object
+            properties:
+                data:
+                    '$ref': '#/components/schemas/SiteSettings'
+            required:
+                - data
+        PublishedHomepageSection:
+            allOf:
+                - '$ref': '#/components/schemas/HomepageSectionRecord'
+                - type: object
+                  properties:
+                      entries:
+                          type: array
+                          items:
+                              type: object
+                  required:
+                      - entries
+        StorefrontHome:
+            type: object
+            properties:
+                announcements:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/BannerRecord'
+                hero_slides:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/BannerRecord'
+                promotions:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/BannerRecord'
+                sections:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/PublishedHomepageSection'
+                testimonials:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/TestimonialRecord'
+                settings:
+                    '$ref': '#/components/schemas/SiteSettings'
+        StorefrontNavigation:
+            type: object
+            properties:
+                header:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/NavigationItemRecord'
+                footer:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/NavigationItemRecord'
+                social:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/NavigationItemRecord'
+        SubscribeNewsletter:
+            type: object
+            properties:
+                email:
+                    type: string
+                    format: email
+                consent:
+                    const: true
+                source:
+                    type: string
+                    maxLength: 64
+                resubscribe_token:
+                    type: string
+                    minLength: 64
+                    maxLength: 64
+            required:
+                - email
+                - consent
+        UnsubscribeNewsletter:
+            type: object
+            properties:
+                token:
+                    type: string
+                    minLength: 64
+                    maxLength: 64
+            required:
+                - token
+        NewsletterSubscriber:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                email:
+                    type: string
+                    format: email
+                source:
+                    type: string
+                consented_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                unsubscribed_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
         AdminCustomer:
             type: object
             properties:

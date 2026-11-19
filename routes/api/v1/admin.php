@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\RoleManagementController;
 use App\Http\Controllers\Api\V1\Admin\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Admin\StaffManagementController;
+use App\Http\Controllers\Api\V1\Admin\StorefrontContentController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\StaffAccountController;
 use App\Http\Controllers\Api\V1\Auth\StaffTwoFactorController;
@@ -167,4 +168,18 @@ Route::prefix('admin')->name('admin.')->middleware('auth:staff')->group(function
     Route::get('reports/sales', [ReportController::class, 'sales'])->can('reports.view')->name('reports.sales');
     Route::get('reports/inventory', [ReportController::class, 'inventory'])->can('reports.view')->name('reports.inventory');
     Route::get('reports/coupons', [ReportController::class, 'coupons'])->can('reports.view')->name('reports.coupons');
+});
+
+Route::prefix('admin')->name('admin.')->middleware('auth:staff')->group(function (): void {
+    $controller = StorefrontContentController::class;
+    foreach (['banners' => 'banner', 'homepage-sections' => 'section', 'navigation' => 'navigation', 'testimonials' => 'testimonial'] as $path => $type) {
+        Route::get($path, [$controller, 'index'])->defaults('contentType', $type)->can('content.view')->name($path.'.index');
+        Route::post($path, [$controller, 'store'])->defaults('contentType', $type)->can('content.manage')->name($path.'.store');
+        Route::get($path.'/{content}', [$controller, 'show'])->defaults('contentType', $type)->can('content.view')->name($path.'.show');
+        Route::patch($path.'/{content}', [$controller, 'update'])->defaults('contentType', $type)->can('content.manage')->name($path.'.update');
+        Route::delete($path.'/{content}', [$controller, 'destroy'])->defaults('contentType', $type)->can('content.manage')->name($path.'.destroy');
+    }
+    Route::get('site-settings', [$controller, 'settings'])->defaults('contentType', 'settings')->can('content.view')->name('site-settings.show');
+    Route::patch('site-settings', [$controller, 'updateSettings'])->defaults('contentType', 'settings')->can('content.manage')->name('site-settings.update');
+    Route::get('newsletter-subscribers', [$controller, 'subscribers'])->can('content.manage')->name('newsletter-subscribers.index');
 });

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\CartCouponController;
 use App\Http\Controllers\Api\V1\Storefront\CategoryController;
+use App\Http\Controllers\Api\V1\Storefront\ContentController;
+use App\Http\Controllers\Api\V1\Storefront\NewsletterController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController;
 use App\Http\Controllers\Api\V1\Storefront\TaxonomyController;
 use Illuminate\Support\Facades\Route;
@@ -30,4 +32,14 @@ Route::prefix('cart')->name('storefront.cart.')->middleware('throttle:60,1')->gr
     Route::post('merge', [CartController::class, 'merge'])->middleware(['auth:customer', 'can:customer-account'])->name('merge');
     Route::post('coupon', [CartCouponController::class, 'store'])->middleware('throttle:coupon-apply')->name('coupon.store');
     Route::delete('coupon', [CartCouponController::class, 'destroy'])->name('coupon.destroy');
+});
+
+Route::prefix('storefront')->name('storefront.content.')->middleware('throttle:120,1')->group(function (): void {
+    Route::get('home', [ContentController::class, 'home'])->name('home');
+    Route::get('navigation', [ContentController::class, 'navigation'])->name('navigation');
+    Route::get('settings', [ContentController::class, 'settings'])->name('settings');
+});
+Route::prefix('newsletter')->name('newsletter.')->middleware('throttle:5,1')->group(function (): void {
+    Route::post('subscribe', [NewsletterController::class, 'subscribe'])->name('subscribe');
+    Route::post('unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('unsubscribe');
 });
