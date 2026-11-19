@@ -27,6 +27,12 @@ class ApiResponseEnvelope
         try {
             $response = $next($request);
             $response->headers->set('X-Request-Id', $requestId);
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
+            $response->headers->set('X-Frame-Options', 'DENY');
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+            if ($request->bearerToken() !== null || ! $request->isMethodSafe() || $response->isClientError()) {
+                $response->headers->set('Cache-Control', 'no-store, private');
+            }
 
             $content = $response->getContent();
 

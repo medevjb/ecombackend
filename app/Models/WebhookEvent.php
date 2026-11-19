@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $provider_event_id
  * @property string $type
  * @property string $object_id
+ * @property Carbon|null $failed_at
  * @property Carbon|null $processed_at
  */
 #[Fillable(['provider_event_id', 'type', 'object_id'])]
@@ -24,6 +25,6 @@ class WebhookEvent extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['processed_at' => 'datetime'];
+        return ['processed_at' => 'datetime', 'failed_at' => 'datetime'];
     }
 }

@@ -14,7 +14,7 @@ it('scopes staff searches and customer order history and deactivates without del
     $staff->account->update(['name' => 'Alex Staff']);
     $own = Order::factory()->create(['user_id' => $customer->id]);
     Payment::factory()->for($own)->create();
-    Order::factory()->create();
+    Order::factory()->create(['user_id' => User::factory()->create(['name' => 'Other Account'])->id]);
     $customer->createToken('customer');
     $base = '/api/v1/admin/customers';
     $url = $base.'/'.$customer->public_id;

@@ -70,6 +70,11 @@ jobs:
           php artisan migrate --no-interaction
           php artisan db:seed --no-interaction
 
+      - name: Audit locked dependencies
+        run: |
+          composer audit --locked
+          npm audit --audit-level=high
+
       - name: Check PHP style and types
         run: |
           composer lint:check

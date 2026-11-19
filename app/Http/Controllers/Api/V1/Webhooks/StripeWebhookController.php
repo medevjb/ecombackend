@@ -51,7 +51,7 @@ class StripeWebhookController extends Controller
             ['provider_event_id' => $eventId],
             ['type' => $event->type, 'object_id' => $objectId],
         );
-        if ($receipt->processed_at === null) {
+        if ($receipt->processed_at === null && $receipt->failed_at === null) {
             ProcessStripeWebhook::dispatch($receipt->id)->afterCommit();
         }
 

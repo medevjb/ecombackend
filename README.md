@@ -8,11 +8,14 @@ For a fresh checkout, install dependencies with `composer install` and copy `.en
 
 ```sh
 php artisan key:generate --no-interaction
-php artisan migrate --no-interaction
+php artisan migrate --seed --no-interaction
+php artisan storage:link --no-interaction
 php artisan serve --no-interaction
 ```
 
-Use `php artisan queue:work --no-interaction` in a separate terminal for the local database queue. The default mail transport logs messages. To use a local Mailpit instance, set `MAIL_MAILER=smtp`, `MAIL_HOST=127.0.0.1`, and `MAIL_PORT=1025`.
+For a fresh checkout with a prepared database and local `.env`, `composer setup` installs dependencies, generates the application key, migrates, and builds the assets. Run `php artisan db:seed --no-interaction` for local demo data.
+
+Run `php artisan queue:work --no-interaction` and `php artisan schedule:work --no-interaction` in separate terminals. The default mail transport logs messages. To use a local Mailpit instance, set `MAIL_MAILER=smtp`, `MAIL_HOST=127.0.0.1`, and `MAIL_PORT=1025`.
 
 ## Local development with Docker Compose
 
@@ -21,8 +24,9 @@ Install Composer dependencies and prepare `.env` as above. Use a non-root `DB_US
 ```sh
 docker compose up -d --build app mysql redis mailpit
 docker compose exec app php artisan key:generate --no-interaction
-docker compose exec app php artisan migrate --no-interaction
-docker compose up -d worker
+docker compose exec app php artisan migrate --seed --no-interaction
+docker compose exec app php artisan storage:link --no-interaction
+docker compose up -d worker scheduler
 ```
 
 The API defaults to port 8000 and the Mailpit web UI defaults to port 8025. The worker uses the Redis queue. Leave Stripe secrets blank until configuring Stripe Test Mode.
@@ -32,7 +36,7 @@ The API defaults to port 8000 and the Mailpit web UI defaults to port 8025. The 
 - `GET /` displays service health and authentication endpoint examples.
 - `GET /api/v1/status` reports database connectivity and returns 503 when the connection is unavailable.
 - `GET /up` reports Laravel liveness.
-- `POST /api/v1/auth/login` accepts credentials for all roles and returns a bearer token and role slugs. See the [foundation decisions](docs/decisions/0001-api-foundation.md) for the planned customer and staff identity response.
+- `POST /api/v1/auth/login` accepts credentials for all roles and returns a bearer token and role slugs. Use the returned `data.dashboard` and `data.user.roles` to route the user to the appropriate client dashboard.
 - Set `STOREFRONT_ORIGIN` and `ADMIN_ORIGIN` to the origins of your frontend applications. Include the scheme and port when needed, with no trailing slash.
 
 Run `vendor/bin/pest` for the automated tests.
@@ -49,4 +53,6 @@ See [Phase 1 identity and two-factor notes](docs/decisions/0002-identity-and-two
 
 Import the [API collection](docs/api/ecommerce.postman_collection.json) and [local environment](docs/api/local.postman_environment.json), select the environment, and fill in `account_email` and `password` locally. Run **Shared login** first. It stores the customer or staff token for the matching request folders. If login returns HTTP 202, supply `totp_code` and send the staff challenge request.
 
-For a new database, run `php artisan db:seed --class=StaffAccessSeeder --no-interaction` to install Phase 2 role and privilege defaults. The seeder creates roles and permissions. Staff identities and credentials are provisioned separately.
+For a new database, run `php artisan db:seed --class=StaffAccessSeeder --no-interaction`, then run `php artisan staff:bootstrap-super-admin owner@example.test` and enter a password at the hidden prompt. The initial Super Admin can provision other staff accounts from Postman.
+
+See the [demo walkthrough](docs/api/demo.md) for checkout and payment testing, and [operations](docs/operations.md) for deployment, security, and the order state diagram.
