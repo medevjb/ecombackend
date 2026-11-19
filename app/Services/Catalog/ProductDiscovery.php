@@ -74,6 +74,12 @@ class ProductDiscovery
         };
     }
 
+    /** @return list<int> */
+    public function visibleCategoryIds(): array
+    {
+        return $this->categoryIds($this->tree->visible());
+    }
+
     public function detail(string $slug): Product
     {
         $product = $this->query()->where('products.slug', $slug)->firstOrFail();

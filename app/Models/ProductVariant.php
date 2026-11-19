@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $is_default
  * @property CatalogStatus $status
  * @property int|null $price_override_amount
+ * @property-read Product|null $product
+ * @property-read Inventory|null $inventory
  */
 #[Fillable(['sku', 'price_override_amount'])]
 class ProductVariant extends Model

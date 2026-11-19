@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "E-commerce backend API",
-    "description": "Local API documentation through Phase 5. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
+    "description": "Local API documentation through Phase 6. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -97,7 +97,18 @@
                   "  } else if (data.challenge_token) {",
                   "    pm.environment.set(\"challenge_token\", data.challenge_token);",
                   "  }",
-                  "}"
+                  "}",
+                  "if (pm.response.code === 200 && pm.response.json().data.cart_merge?.status === \"merged\") pm.environment.unset(\"guest_cart_token\");"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const guest = pm.environment.get(\"guest_cart_token\");",
+                  "if (guest) pm.request.headers.upsert({key:\"X-Cart-Token\", value:guest});"
                 ]
               }
             }
@@ -5144,6 +5155,454 @@
               }
             }
           }
+        }
+      ]
+    },
+    {
+      "name": "Addresses and cart",
+      "item": [
+        {
+          "name": "List current customer addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "List current customer addresses.\n\nDocumented HTTP responses: 200, 401, 403, 404, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/addresses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "addresses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "per_page",
+                  "value": "20",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Save an address for the current customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Save an address for the current customer.\n\nDocumented HTTP responses: 201, 400, 401, 403, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/addresses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "addresses"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"Example Customer\",\n  \"line1\": \"100 Main Street\",\n  \"city\": \"Portland\",\n  \"country\": \"US\",\n  \"postal_code\": \"97035\",\n  \"is_default\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update an owned address",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Update an owned address.\n\nDocumented HTTP responses: 200, 401, 403, 404, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/addresses/{{address_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "addresses",
+                "{{address_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"line2\": \"Unit 3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete an owned address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Delete an owned address.\n\nDocumented HTTP responses: 204, 401, 403, 404, 422.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/addresses/{{address_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "addresses",
+                "{{address_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Retrieve a guest or customer cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Retrieve a guest or customer cart.\n\nDocumented HTTP responses: 200, 400, 401, 403, 404, 409, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add a variant to the cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Add a variant to the cart.\n\nDocumented HTTP responses: 200, 400, 401, 403, 404, 409, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variant_id\": \"{{variant_id}}\",\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Empty the current cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Empty the current cart.\n\nDocumented HTTP responses: 204, 400, 401, 403, 404, 409, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set an owned cart item quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Set an owned cart item quantity.\n\nDocumented HTTP responses: 200, 400, 401, 403, 404, 409, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items/{{cart_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items",
+                "{{cart_item_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Remove an owned cart item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Remove an owned cart item.\n\nDocumented HTTP responses: 204, 400, 401, 403, 404, 409, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items/{{cart_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "items",
+                "{{cart_item_id}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Merge the guest cart into the current customer cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Cart-Token",
+                "value": "{{guest_cart_token}}"
+              }
+            ],
+            "description": "Merge the guest cart into the current customer cart.\n\nDocumented HTTP responses: 200, 401, 403, 404, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/merge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "cart",
+                "merge"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) pm.environment.unset(\"guest_cart_token\");"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

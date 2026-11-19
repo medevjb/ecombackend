@@ -8,8 +8,8 @@ return [
         env('ADMIN_ORIGIN'),
     ])),
     'allowed_origins_patterns' => [],
-    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'Idempotency-Key'],
-    'exposed_headers' => ['Retry-After', 'X-Request-Id'],
+    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'Idempotency-Key', 'X-Cart-Token'],
+    'exposed_headers' => ['Retry-After', 'X-Request-Id', 'X-Cart-Token'],
     'max_age' => 0,
     'supports_credentials' => false,
 ];

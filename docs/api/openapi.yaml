@@ -27,6 +27,13 @@ paths:
         post:
             operationId: login
             summary: Issue a bearer token for an account of any role
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  required: false
+                  description: Optionally merge a guest cart during customer login.
+                  schema:
+                      type: string
             requestBody:
                 required: true
                 content:
@@ -4193,6 +4200,437 @@ paths:
                       type: string
                       maxLength: 128
                       pattern: '^[A-Za-z0-9._:-]+$'
+    /api/v1/me/addresses:
+        get:
+            operationId: listAddresses
+            summary: 'List current customer addresses'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List current customer addresses.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/CustomerAddress'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createAddress
+            summary: 'Save an address for the current customer'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Save an address for the current customer.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CustomerAddress'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateAddress'
+    '/api/v1/me/addresses/{address}':
+        patch:
+            operationId: updateAddress
+            summary: 'Update an owned address'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update an owned address.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CustomerAddress'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddressInput'
+            parameters:
+                - name: address
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteAddress
+            summary: 'Delete an owned address'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Delete an owned address.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: address
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/cart:
+        get:
+            operationId: getCart
+            summary: 'Retrieve a guest or customer cart'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Retrieve a guest or customer cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            description: 'Issued only when a new guest cart is created.'
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartQuote'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+    /api/v1/cart/items:
+        post:
+            operationId: addCartItem
+            summary: 'Add a variant to the cart'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Add a variant to the cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            description: 'Issued only when a new guest cart is created.'
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartQuote'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddCartItem'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+        delete:
+            operationId: clearCart
+            summary: 'Empty the current cart'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Empty the current cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            description: 'Issued only when a new guest cart is created.'
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+    '/api/v1/cart/items/{item}':
+        patch:
+            operationId: updateCartItem
+            summary: 'Set an owned cart item quantity'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Set an owned cart item quantity.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            description: 'Issued only when a new guest cart is created.'
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartQuote'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetCartQuantity'
+            parameters:
+                - name: item
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+        delete:
+            operationId: deleteCartItem
+            summary: 'Remove an owned cart item'
+            security:
+                - {}
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Remove an owned cart item.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        X-Cart-Token:
+                            description: 'Issued only when a new guest cart is created.'
+                            schema:
+                                type: string
+                                pattern: '^[a-f0-9]{64}$'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: item
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: false
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
+    /api/v1/cart/merge:
+        post:
+            operationId: mergeCart
+            summary: 'Merge the guest cart into the current customer cart'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Merge the guest cart into the current customer cart.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CartMerge'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: X-Cart-Token
+                  in: header
+                  description: 'Guest cart token returned by the API. Keep it private.'
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[a-f0-9]{64}$'
 components:
     securitySchemes:
         BearerAuth:
@@ -4419,6 +4857,8 @@ components:
                 dashboard:
                     type: string
                     enum: [customer, staff]
+                cart_merge:
+                    $ref: '#/components/schemas/LoginCartMerge'
                 user:
                     $ref: '#/components/schemas/User'
         CurrentPassword:
@@ -5347,3 +5787,270 @@ components:
                 - variant_id
                 - delta
                 - reason
+        AddressInput:
+            type: object
+            properties:
+                recipient:
+                    type: string
+                    maxLength: 150
+                line1:
+                    type: string
+                    maxLength: 200
+                line2:
+                    type:
+                        - string
+                        - 'null'
+                city:
+                    type: string
+                    maxLength: 100
+                region:
+                    type:
+                        - string
+                        - 'null'
+                postal_code:
+                    type: string
+                    maxLength: 32
+                country:
+                    type: string
+                    pattern: '^[A-Za-z]{2}$'
+                phone:
+                    type:
+                        - string
+                        - 'null'
+                is_default:
+                    type: boolean
+        CreateAddress:
+            type: object
+            properties:
+                recipient:
+                    type: string
+                    maxLength: 150
+                line1:
+                    type: string
+                    maxLength: 200
+                line2:
+                    type:
+                        - string
+                        - 'null'
+                city:
+                    type: string
+                    maxLength: 100
+                region:
+                    type:
+                        - string
+                        - 'null'
+                postal_code:
+                    type: string
+                    maxLength: 32
+                country:
+                    type: string
+                    pattern: '^[A-Za-z]{2}$'
+                phone:
+                    type:
+                        - string
+                        - 'null'
+                is_default:
+                    type: boolean
+            required:
+                - recipient
+                - line1
+                - city
+                - postal_code
+                - country
+        CustomerAddress:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                recipient:
+                    type: string
+                    maxLength: 150
+                line1:
+                    type: string
+                    maxLength: 200
+                line2:
+                    type:
+                        - string
+                        - 'null'
+                city:
+                    type: string
+                    maxLength: 100
+                region:
+                    type:
+                        - string
+                        - 'null'
+                postal_code:
+                    type: string
+                    maxLength: 32
+                country:
+                    type: string
+                    pattern: '^[A-Za-z]{2}$'
+                phone:
+                    type:
+                        - string
+                        - 'null'
+                is_default:
+                    type: boolean
+            required:
+                - id
+                - recipient
+                - line1
+                - city
+                - postal_code
+                - country
+                - is_default
+        SetCartQuantity:
+            type: object
+            properties:
+                quantity:
+                    type: integer
+                    minimum: 1
+                    maximum: 99
+            required:
+                - quantity
+        AddCartItem:
+            type: object
+            properties:
+                variant_id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                quantity:
+                    type: integer
+                    minimum: 1
+                    maximum: 99
+            required:
+                - variant_id
+                - quantity
+        CartQuote:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CartLine'
+                subtotal_amount:
+                    type: integer
+                    minimum: 0
+                currency:
+                    const: USD
+                conflicts:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            item_id:
+                                type: string
+                                pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                            code:
+                                type: string
+                        required:
+                            - item_id
+                            - code
+            required:
+                - id
+                - items
+                - subtotal_amount
+                - currency
+                - conflicts
+        CartLine:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                variant_id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                sku:
+                    type: string
+                product_id:
+                    type:
+                        - string
+                        - 'null'
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                name:
+                    type:
+                        - string
+                        - 'null'
+                quantity:
+                    type: integer
+                    minimum: 1
+                    maximum: 99
+                unit_amount:
+                    type:
+                        - integer
+                        - 'null'
+                line_amount:
+                    type:
+                        - integer
+                        - 'null'
+            required:
+                - id
+                - variant_id
+                - sku
+                - quantity
+        CartMerge:
+            type: object
+            properties:
+                cart:
+                    $ref: '#/components/schemas/CartQuote'
+                merge_conflicts:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            variant_id:
+                                type: string
+                                pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                            requested_quantity:
+                                type: integer
+                                minimum: 0
+                            quantity:
+                                type: integer
+                                minimum: 0
+                            code:
+                                type: string
+                        required:
+                            - variant_id
+                            - requested_quantity
+                            - quantity
+                            - code
+            required:
+                - cart
+                - merge_conflicts
+        LoginCartMerge:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - merged
+                        - unavailable
+                conflicts:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            variant_id:
+                                type: string
+                                pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                            requested_quantity:
+                                type: integer
+                                minimum: 0
+                            quantity:
+                                type: integer
+                                minimum: 0
+                            code:
+                                type: string
+                        required:
+                            - variant_id
+                            - requested_quantity
+                            - quantity
+                            - code
+            required:
+                - status
+                - conflicts
