@@ -7017,6 +7017,319 @@ paths:
                     application/json:
                         schema:
                             '$ref': '#/components/schemas/UnsubscribeNewsletter'
+    '/api/v1/products/{slug}/reviews':
+        get:
+            operationId: listProductReviews
+            summary: List public approved product reviews
+            security: []
+            responses:
+                '200':
+                    description: List public approved product reviews.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/ProductReview'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: slug
+                  required: true
+                  schema:
+                      type: string
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: submitReview
+            summary: Submit a product review for moderation
+            security:
+                - BearerAuth: []
+            responses:
+                '201':
+                    description: Submit a product review for moderation.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/ProductReview'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/SubmitProductReview'
+            parameters:
+                - in: path
+                  name: slug
+                  required: true
+                  schema:
+                      type: string
+    '/api/v1/me/reviews/{review}':
+        patch:
+            operationId: updateMyReview
+            summary: Update an owned review and return it to moderation
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Update an owned review and return it to moderation.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/ProductReview'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/UpdateProductReview'
+            parameters:
+                - in: path
+                  name: review
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+        delete:
+            operationId: deleteMyReview
+            summary: Delete an owned review
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Delete an owned review.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: review
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/reviews':
+        get:
+            operationId: listAdminReviews
+            summary: List reviews for moderation
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List reviews for moderation.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/ProductReview'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - pending
+                          - approved
+                          - rejected
+                - name: product_id
+                  in: query
+                  schema:
+                      type: string
+    '/api/v1/admin/reviews/{review}/moderate':
+        post:
+            operationId: moderateReview
+            summary: Approve or reject a review
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Approve or reject a review.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/ReviewModerationResult'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/ModerateReview'
+            parameters:
+                - in: path
+                  name: review
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/reviews/bulk-actions':
+        post:
+            operationId: bulkModerateReviews
+            summary: Approve or reject up to fifty reviews atomically
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Approve or reject up to fifty reviews atomically.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/ReviewModerationResult'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '409':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+                '429':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/BulkModerateProductReviews'
 components:
     securitySchemes:
         BearerAuth:
@@ -7051,6 +7364,131 @@ components:
                                         email: [The email field is required.]
                                 request_id: req_01KB8AK2AP4NH2PWRHDCJ9S2NX
     schemas:
+        ProductReview:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                title:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 120
+                body:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 2000
+                status:
+                    type: string
+                    enum:
+                        - pending
+                        - approved
+                        - rejected
+                verified_purchase:
+                    type: boolean
+                created_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                product_id:
+                    type: string
+                    format: ulid
+                customer_id:
+                    type: string
+                    format: ulid
+            required:
+                - id
+                - rating
+                - verified_purchase
+                - created_at
+        SubmitProductReview:
+            type: object
+            properties:
+                rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                title:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 120
+                body:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 2000
+            required:
+                - rating
+        UpdateProductReview:
+            type: object
+            properties:
+                rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                title:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 120
+                body:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 2000
+        ModerateReview:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - approved
+                        - rejected
+                reason:
+                    type: string
+                    maxLength: 500
+            required:
+                - status
+                - reason
+        BulkModerateProductReviews:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - approved
+                        - rejected
+                reason:
+                    type: string
+                    maxLength: 500
+                ids:
+                    type: array
+                    minItems: 1
+                    maxItems: 50
+                    uniqueItems: true
+                    items:
+                        type: string
+                        format: ulid
+            required:
+                - ids
+                - status
+                - reason
+        ReviewModerationResult:
+            type: object
+            properties:
+                changed:
+                    type: integer
+                    minimum: 0
+            required:
+                - changed
         BannerData:
             type: object
             properties:

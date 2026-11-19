@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Storefront\CategoryController;
 use App\Http\Controllers\Api\V1\Storefront\ContentController;
 use App\Http\Controllers\Api\V1\Storefront\NewsletterController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController;
+use App\Http\Controllers\Api\V1\Storefront\ReviewController;
 use App\Http\Controllers\Api\V1\Storefront\TaxonomyController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,3 +44,6 @@ Route::prefix('newsletter')->name('newsletter.')->middleware('throttle:5,1')->gr
     Route::post('subscribe', [NewsletterController::class, 'subscribe'])->name('subscribe');
     Route::post('unsubscribe', [NewsletterController::class, 'unsubscribe'])->name('unsubscribe');
 });
+
+Route::get('products/{slug}/reviews', [ReviewController::class, 'index'])
+    ->middleware('throttle:120,1')->name('storefront.reviews.index');

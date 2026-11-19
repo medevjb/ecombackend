@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Auth\TokenController;
 use App\Http\Controllers\Api\V1\Customer\AddressController;
 use App\Http\Controllers\Api\V1\Customer\CheckoutController;
 use App\Http\Controllers\Api\V1\Customer\OrderController;
+use App\Http\Controllers\Api\V1\Storefront\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:customer', 'can:customer-account'])->group(function (): void {
@@ -19,4 +20,10 @@ Route::middleware(['auth:customer', 'can:customer-account'])->group(function ():
     Route::get('orders', [OrderController::class, 'index'])->name('customer.orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('customer.orders.show');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('customer.orders.cancel');
+});
+
+Route::middleware(['auth:customer', 'can:customer-account', 'throttle:15,1'])->name('customer.reviews.')->group(function (): void {
+    Route::post('products/{slug}/reviews', [ReviewController::class, 'store'])->name('store');
+    Route::patch('me/reviews/{review}', [ReviewController::class, 'update'])->name('update');
+    Route::delete('me/reviews/{review}', [ReviewController::class, 'destroy'])->name('destroy');
 });
