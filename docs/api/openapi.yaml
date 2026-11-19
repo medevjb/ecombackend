@@ -5700,6 +5700,384 @@ paths:
                     application/json:
                         schema:
                             '$ref': '#/components/schemas/UpdateShippingSettings'
+    '/api/v1/admin/customers':
+        get:
+            operationId: listCustomers
+            summary: List and search customer accounts
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List and search customer accounts.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/AdminCustomer'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                - name: active
+                  in: query
+                  schema:
+                      type: boolean
+    '/api/v1/admin/customers/{customer}':
+        get:
+            operationId: getCustomer
+            summary: Read customer account details
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read customer account details.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/AdminCustomer'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: customer
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/customers/{customer}/orders':
+        get:
+            operationId: listCustomerHistory
+            summary: List orders for a selected customer
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List orders for a selected customer.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/Order'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - in: path
+                  name: customer
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+    '/api/v1/admin/customers/{customer}/status':
+        patch:
+            operationId: updateCustomerStatus
+            summary: Activate or deactivate a customer account
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Activate or deactivate a customer account.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/AdminCustomer'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            '$ref': '#/components/schemas/CustomerStatusInput'
+            parameters:
+                - in: path
+                  name: customer
+                  required: true
+                  schema:
+                      type: string
+                      format: ulid
+    '/api/v1/admin/dashboard':
+        get:
+            operationId: getDashboard
+            summary: Read staff dashboard metrics and recent orders
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read staff dashboard metrics and recent orders.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              '$ref': '#/components/schemas/AdminDashboard'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+    '/api/v1/admin/reports/sales':
+        get:
+            operationId: getSalesReport
+            summary: Report sales and status distribution in UTC
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Report sales and status distribution in UTC.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              oneOf:
+                                                  - '$ref': '#/components/schemas/DailySalesReport'
+                                                  - '$ref': '#/components/schemas/MerchandiseSalesReport'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: from
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: to
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: group_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - day
+                          - product
+                          - category
+                      default: day
+    '/api/v1/admin/reports/inventory':
+        get:
+            operationId: getLowStockReport
+            summary: List variants below or at the stock threshold
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List variants below or at the stock threshold.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/Inventory'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+    '/api/v1/admin/reports/coupons':
+        get:
+            operationId: getCouponReport
+            summary: List completed coupon redemption totals
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: List completed coupon redemption totals.
+                    headers:
+                        X-Request-Id:
+                            '$ref': '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - '$ref': '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  '$ref': '#/components/schemas/CouponReportRow'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      '$ref': '#/components/schemas/Pagination'
+                '401':
+                    '$ref': '#/components/responses/Error'
+                '403':
+                    '$ref': '#/components/responses/Error'
+                '404':
+                    '$ref': '#/components/responses/Error'
+                '422':
+                    '$ref': '#/components/responses/Error'
+            parameters:
+                - name: from
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: to
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
 components:
     securitySchemes:
         BearerAuth:
@@ -5734,6 +6112,163 @@ components:
                                         email: [The email field is required.]
                                 request_id: req_01KB8AK2AP4NH2PWRHDCJ9S2NX
     schemas:
+        AdminCustomer:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                name:
+                    type: string
+                email:
+                    type: string
+                    format: email
+                email_verified_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                active:
+                    type: boolean
+                created_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+        CustomerStatusInput:
+            type: object
+            properties:
+                active:
+                    type: boolean
+                reason:
+                    type: string
+                    maxLength: 255
+            required:
+                - active
+                - reason
+        SalesTotals:
+            type: object
+            properties:
+                orders:
+                    type: integer
+                gross_captured_amount:
+                    type: integer
+                refunded_amount:
+                    type: integer
+                net_revenue_amount:
+                    type: integer
+            required:
+                - orders
+                - gross_captured_amount
+                - refunded_amount
+                - net_revenue_amount
+        DailySalesReport:
+            type: object
+            properties:
+                timezone:
+                    const: UTC
+                currency:
+                    const: USD
+                totals:
+                    '$ref': '#/components/schemas/SalesTotals'
+                daily:
+                    type: array
+                    items:
+                        allOf:
+                            - '$ref': '#/components/schemas/SalesTotals'
+                            - type: object
+                              properties:
+                                  date:
+                                      type: string
+                                      format: date
+                              required:
+                                  - date
+                order_status:
+                    type: object
+                    additionalProperties:
+                        type: integer
+            required:
+                - totals
+                - daily
+                - order_status
+        AdminDashboard:
+            type: object
+            properties:
+                timezone:
+                    const: UTC
+                currency:
+                    const: USD
+                today:
+                    allOf:
+                        - '$ref': '#/components/schemas/SalesTotals'
+                        - type: object
+                          properties:
+                              date:
+                                  type: string
+                                  format: date
+                          required:
+                              - date
+                sales_series:
+                    type: array
+                    items:
+                        allOf:
+                            - '$ref': '#/components/schemas/SalesTotals'
+                            - type: object
+                              properties:
+                                  date:
+                                      type: string
+                                      format: date
+                              required:
+                                  - date
+                customer_count:
+                    type: integer
+                low_stock_count:
+                    type: integer
+                recent_orders:
+                    type: array
+                    items:
+                        '$ref': '#/components/schemas/Order'
+        MerchandiseSalesReport:
+            type: object
+            properties:
+                timezone:
+                    const: UTC
+                currency:
+                    const: USD
+                group_by:
+                    type: string
+                    enum:
+                        - product
+                        - category
+                items:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            id:
+                                type: string
+                                format: ulid
+                            name:
+                                type: string
+                            units:
+                                type: integer
+                            gross_merchandise_amount:
+                                type: integer
+            required:
+                - group_by
+                - items
+        CouponReportRow:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: ulid
+                code:
+                    type: string
+                redemptions:
+                    type: integer
+                discount_amount:
+                    type: integer
         ShippingSettings:
             type: object
             properties:

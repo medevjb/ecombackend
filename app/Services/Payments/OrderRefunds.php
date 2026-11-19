@@ -180,7 +180,9 @@ class OrderRefunds
             'failed', 'canceled' => RefundStatus::Failed,
             default => RefundStatus::Pending,
         };
-        $record->forceFill(['status' => $status, 'provider_refund_id' => $remote->id])->save();
+        $record->forceFill(['status' => $status, 'provider_refund_id' => $remote->id,
+            'completed_at' => $status === RefundStatus::Succeeded ? now() : null,
+        ])->save();
 
         if ($status === RefundStatus::Succeeded) {
             $this->applySuccessfulRefund($order, $payment, $record);

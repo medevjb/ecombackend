@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\BrandController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\CouponController;
+use App\Http\Controllers\Api\V1\Admin\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\InventoryController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
+use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\RoleManagementController;
 use App\Http\Controllers\Api\V1\Admin\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Admin\StaffManagementController;
@@ -154,4 +156,15 @@ Route::prefix('admin/orders')->name('admin.orders.')->middleware('auth:staff')->
 Route::prefix('admin/shipping-settings')->name('admin.shipping-settings.')->middleware('auth:staff')->group(function (): void {
     Route::get('/', [ShippingSettingsController::class, 'show'])->can('shipping.manage')->name('show');
     Route::patch('/', [ShippingSettingsController::class, 'update'])->can('shipping.manage')->name('update');
+});
+
+Route::prefix('admin')->name('admin.')->middleware('auth:staff')->group(function (): void {
+    Route::get('customers', [CustomerController::class, 'index'])->can('customers.view')->name('customers.index');
+    Route::get('customers/{customer}', [CustomerController::class, 'show'])->can('customers.view')->name('customers.show');
+    Route::get('customers/{customer}/orders', [CustomerController::class, 'orders'])->can('customers.view')->name('customers.orders');
+    Route::patch('customers/{customer}/status', [CustomerController::class, 'status'])->can('customers.manage')->name('customers.status');
+    Route::get('dashboard', [ReportController::class, 'dashboard'])->can('reports.view')->name('dashboard');
+    Route::get('reports/sales', [ReportController::class, 'sales'])->can('reports.view')->name('reports.sales');
+    Route::get('reports/inventory', [ReportController::class, 'inventory'])->can('reports.view')->name('reports.inventory');
+    Route::get('reports/coupons', [ReportController::class, 'coupons'])->can('reports.view')->name('reports.coupons');
 });

@@ -54,10 +54,12 @@ class CatalogMaintenance
     }
 
     /**
-     * @template T of CatalogRecord
+     * @template TKey of array-key
+     * @template TValue
      *
-     * @param LengthAwarePaginator<int, T> $items
-     * @return array{pagination: array{current_page: int, per_page: int, total: int, last_page: int}} */
+     * @param  LengthAwarePaginator<TKey, TValue>  $items
+     * @return array{pagination: array{current_page: int, per_page: int, total: int, last_page: int}}
+     */
     public function meta(LengthAwarePaginator $items): array
     {
         return ['pagination' => [

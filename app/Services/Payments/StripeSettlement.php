@@ -134,7 +134,7 @@ class StripeSettlement
             return $this->reconcile($payment, $intent, $problem->errorCode);
         }
 
-        $payment->forceFill(['status' => PaymentStatus::Succeeded, 'captured_amount' => $intent->amount_received])->save();
+        $payment->forceFill(['status' => PaymentStatus::Succeeded, 'captured_amount' => $intent->amount_received, 'captured_at' => now()])->save();
         $order->forceFill(['paid_at' => now()]);
         $this->orders->record($order, OrderStatus::Paid, 'system', reason: 'Verified Stripe payment.');
         $this->countSales($order);
@@ -157,7 +157,7 @@ class StripeSettlement
 
     private function flagException(Payment $payment, string $code, int $captured = 0): void
     {
-        $payment->forceFill(['status' => PaymentStatus::Exception, 'captured_amount' => $captured, 'exception_code' => $code])->save();
+        $payment->forceFill(['status' => PaymentStatus::Exception, 'captured_amount' => $captured, 'captured_at' => $captured > 0 ? now() : null, 'exception_code' => $code])->save();
         SendPaymentExceptionNotice::dispatch($payment->id)->afterCommit();
     }
 
