@@ -1,0 +1,1682 @@
+openapi: 3.1.0
+info:
+    title: E-commerce backend API
+    version: 1.0.0
+paths:
+    /api/v1/status:
+        get:
+            operationId: getApiStatus
+            summary: Check API and database connectivity
+            responses:
+                '200':
+                    description: The API reached the database.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/HealthStatus'
+                '503':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/login:
+        post:
+            operationId: login
+            summary: Issue a bearer token for an account of any role
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [email, password]
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    maxLength: 255
+                                password:
+                                    type: string
+                                    format: password
+                                device_name:
+                                    type: string
+                                    maxLength: 100
+            responses:
+                '200':
+                    description: Signed in.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/AccessGrant'
+                '202':
+                    description: Staff second-factor verification is required. No bearer token has been issued.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TwoFactorChallenge'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '423':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    description: Too many login attempts.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                        Retry-After:
+                            schema:
+                                type: integer
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /api/v1/auth/me:
+        get:
+            operationId: currentUser
+            summary: Get the current account and roles
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Profile retrieved.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/User'
+                '401':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/logout:
+        post:
+            operationId: logout
+            summary: Revoke the current bearer token
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Token revoked.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '401':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/audit-logs:
+        get:
+            operationId: listAuditLogs
+            summary: List audit entries with audit.view permission
+            security:
+                - BearerAuth: []
+            parameters:
+                - name: event
+                  in: query
+                  description: Filter by event code prefix.
+                  schema:
+                      type: string
+                      pattern: '^[a-z0-9.-]+$'
+                      maxLength: 100
+                - name: user_id
+                  in: query
+                  description: Filter by actor ID.
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: from
+                  in: query
+                  description: First UTC day to include.
+                  schema:
+                      type: string
+                      format: date
+                - name: to
+                  in: query
+                  description: Last UTC day to include.
+                  schema:
+                      type: string
+                      format: date
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum: [created_at, id, event]
+                      default: created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum: [asc, desc]
+                      default: desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 2147483647
+                      default: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+            responses:
+                '200':
+                    description: Audit log entries.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/AuditLogEntry'
+                                          meta:
+                                              type: object
+                                              required: [pagination]
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+
+    /api/v1/auth/register:
+        post:
+            operationId: registerCustomer
+            summary: Create a customer account
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegisterCustomer'
+            responses:
+                '201':
+                    description: Create a customer account.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/User'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/forgot-password:
+        post:
+            operationId: requestCustomerPasswordReset
+            summary: Accept a customer password reset request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AccountEmail'
+            responses:
+                '202':
+                    description: Accept a customer password reset request.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Success'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/reset-password:
+        post:
+            operationId: resetCustomerPassword
+            summary: Reset a customer password and revoke bearer tokens
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResetCustomerPassword'
+            responses:
+                '204':
+                    description: Reset a customer password and revoke bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/change-password:
+        post:
+            operationId: changeCustomerPassword
+            summary: Change the customer password and revoke bearer tokens
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChangeCustomerPassword'
+            responses:
+                '204':
+                    description: Change the customer password and revoke bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/email/verification-notification:
+        post:
+            operationId: sendCustomerVerification
+            summary: Send a customer email verification link
+            security:
+                - BearerAuth: []
+            responses:
+                '202':
+                    description: Send a customer email verification link.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Success'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/email/verify/{id}/{hash}:
+        get:
+            operationId: verifyCustomerEmail
+            summary: Verify a customer email address
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - name: hash
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - name: expires
+                  in: query
+                  required: true
+                  schema:
+                      type: integer
+                - name: signature
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '204':
+                    description: Verify a customer email address.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/me:
+        get:
+            operationId: showCustomerProfile
+            summary: Read the customer profile
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read the customer profile.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/User'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+        patch:
+            operationId: updateCustomerProfile
+            summary: Update the customer display name
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateCustomerProfile'
+            responses:
+                '200':
+                    description: Update the customer display name.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/User'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/me:
+        get:
+            operationId: showStaffProfile
+            summary: Read the staff profile
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Read the staff profile.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                '401':
+                    $ref: '#/components/responses/Error'
+        patch:
+            operationId: updateStaffProfile
+            summary: Update the staff display name
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateCustomerProfile'
+            responses:
+                '200':
+                    description: Update the staff display name.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/logout:
+        post:
+            operationId: logoutStaff
+            summary: Revoke the staff bearer token
+            security:
+                - BearerAuth: []
+            responses:
+                '204':
+                    description: Revoke the staff bearer token.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '401':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/forgot-password:
+        post:
+            operationId: requestStaffPasswordReset
+            summary: Accept a staff password reset request
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AccountEmail'
+            responses:
+                '202':
+                    description: Accept a staff password reset request.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Success'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/reset-password:
+        post:
+            operationId: resetStaffPassword
+            summary: Reset the staff password and revoke bearer tokens
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResetCustomerPassword'
+            responses:
+                '204':
+                    description: Reset the staff password and revoke bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/change-password:
+        post:
+            operationId: changeStaffPassword
+            summary: Change the staff password and revoke bearer tokens
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChangeCustomerPassword'
+            responses:
+                '204':
+                    description: Change the staff password and revoke bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/2fa/setup:
+        post:
+            operationId: setupStaffTwoFactor
+            summary: Start staff TOTP enrollment
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CurrentPassword'
+            responses:
+                '200':
+                    description: Start staff TOTP enrollment.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/TwoFactorEnrollment'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '409':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/2fa/confirm:
+        post:
+            operationId: confirmStaffTwoFactor
+            summary: Confirm staff TOTP and revoke prior bearer tokens
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TotpCode'
+            responses:
+                '200':
+                    description: Confirm staff TOTP and revoke prior bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/RecoveryCodes'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '409':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/2fa/challenge:
+        post:
+            operationId: verifyStaffTwoFactorChallenge
+            summary: Complete staff login with a TOTP or recovery code
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CompleteTwoFactorChallenge'
+            responses:
+                '200':
+                    description: Complete staff login with a TOTP or recovery code.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/AccessGrant'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/2fa/recovery:
+        post:
+            operationId: replaceStaffRecoveryCodes
+            summary: Regenerate staff recovery codes
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PasswordAndTotpCode'
+            responses:
+                '200':
+                    description: Regenerate staff recovery codes.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/RecoveryCodes'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '409':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/auth/2fa/disable:
+        post:
+            operationId: disableStaffTwoFactor
+            summary: Disable staff TOTP and revoke prior bearer tokens
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PasswordAndTotpCode'
+            responses:
+                '204':
+                    description: Disable staff TOTP and revoke prior bearer tokens.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                '400':
+                    $ref: '#/components/responses/Error'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '409':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/permissions:
+        get:
+            operationId: listPermissions
+            summary: 'List supported staff permissions'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List supported staff permissions.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  type: string
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+    /api/v1/admin/roles:
+        get:
+            operationId: listRoles
+            summary: 'List staff roles'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List staff roles.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/StaffRole'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+        post:
+            operationId: createRole
+            summary: 'Create a custom staff role'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create a custom staff role.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffRole'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateStaffRole'
+    '/api/v1/admin/roles/{roleSlug}':
+        get:
+            operationId: getRole
+            summary: 'Read a role by its stable slug'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read a role by its stable slug.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffRole'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: roleSlug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+        patch:
+            operationId: updateRole
+            summary: 'Update the name of an editable role'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update the name of an editable role.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffRole'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RenameStaffRole'
+            parameters:
+                - name: roleSlug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+        delete:
+            operationId: deleteRole
+            summary: 'Delete an unassigned custom role'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Delete an unassigned custom role.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: roleSlug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+    '/api/v1/admin/roles/{roleSlug}/permissions':
+        put:
+            operationId: replaceRolePermissions
+            summary: 'Replace the permissions granted by a role'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Replace the permissions granted by a role.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffRole'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReplaceRolePermissions'
+            parameters:
+                - name: roleSlug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+    /api/v1/admin/staff:
+        get:
+            operationId: listStaff
+            summary: 'List staff with filtering and pagination'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List staff with filtering and pagination.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/StaffAccount'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - active
+                          - inactive
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - created_at
+                          - name
+                          - email
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      default: 1
+        post:
+            operationId: createStaff
+            summary: 'Create a staff account'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create a staff account.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateStaffAccount'
+    '/api/v1/admin/staff/{staff}':
+        get:
+            operationId: getStaff
+            summary: 'Read a staff account'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read a staff account.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: staff
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateStaff
+            summary: 'Update a staff name or active status'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update a staff name or active status.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateStaffAccount'
+            parameters:
+                - name: staff
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/staff/{staff}/roles':
+        put:
+            operationId: replaceStaffRoles
+            summary: 'Replace the roles assigned to a staff account'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Replace the roles assigned to a staff account.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/StaffAccount'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReplaceStaffRoles'
+            parameters:
+                - name: staff
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/activity-logs:
+        get:
+            operationId: listActivityLogs
+            summary: 'List audit entries with audit.view permission'
+            security:
+                - BearerAuth: []
+            parameters:
+                - name: event
+                  in: query
+                  description: 'Filter by event code prefix.'
+                  schema:
+                      type: string
+                      pattern: '^[a-z0-9.-]+$'
+                      maxLength: 100
+                - name: user_id
+                  in: query
+                  description: 'Filter by actor ID.'
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: from
+                  in: query
+                  description: 'First UTC day to include.'
+                  schema:
+                      type: string
+                      format: date
+                - name: to
+                  in: query
+                  description: 'Last UTC day to include.'
+                  schema:
+                      type: string
+                      format: date
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - created_at
+                          - id
+                          - event
+                      default: created_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                      default: desc
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 2147483647
+                      default: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+            responses:
+                200:
+                    description: 'Audit log entries.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/AuditLogEntry'
+                                          meta:
+                                              type: object
+                                              required:
+                                                  - pagination
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+components:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+    headers:
+        RequestId:
+            description: Server-generated request correlation ID.
+            schema:
+                type: string
+                pattern: '^req_[0-9A-HJKMNP-TV-Z]{26}$'
+    responses:
+        Error:
+            description: The request could not be completed.
+            headers:
+                X-Request-Id:
+                    $ref: '#/components/headers/RequestId'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Error'
+                    examples:
+                        validation:
+                            value:
+                                success: false
+                                message: The supplied data is invalid.
+                                data: null
+                                meta: null
+                                errors:
+                                    code: VALIDATION_FAILED
+                                    fields:
+                                        email: [The email field is required.]
+                                request_id: req_01KB8AK2AP4NH2PWRHDCJ9S2NX
+    schemas:
+        Success:
+            type: object
+            required: [success, message, data, meta, errors, request_id]
+            properties:
+                success:
+                    const: true
+                message:
+                    type: string
+                data: {}
+                meta:
+                    type: [object, 'null']
+                errors:
+                    type: 'null'
+                request_id:
+                    type: string
+        Error:
+            type: object
+            required: [success, message, data, meta, errors, request_id]
+            properties:
+                success:
+                    const: false
+                message:
+                    type: string
+                data:
+                    type: 'null'
+                meta:
+                    type: 'null'
+                errors:
+                    type: object
+                    required: [code]
+                    properties:
+                        code:
+                            type: string
+                        fields:
+                            type: object
+                            additionalProperties:
+                                type: array
+                                items:
+                                    type: string
+                request_id:
+                    type: string
+        HealthStatus:
+            type: object
+            required: [status, version, checks, checked_at]
+            properties:
+                status:
+                    const: operational
+                version:
+                    const: v1
+                checks:
+                    type: object
+                    required: [api, database]
+                    properties:
+                        api:
+                            const: operational
+                        database:
+                            const: operational
+                checked_at:
+                    type: string
+                    format: date-time
+        User:
+            type: object
+            required: [id, name, email, email_verified, roles]
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                name:
+                    type: string
+                email:
+                    type: string
+                    format: email
+                email_verified:
+                    type: boolean
+                roles:
+                    type: array
+                    items:
+                        type: string
+
+        Pagination:
+            type: object
+            required: [current_page, per_page, total, last_page]
+            properties:
+                current_page:
+                    type: integer
+                    minimum: 1
+                per_page:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                total:
+                    type: integer
+                    minimum: 0
+                last_page:
+                    type: integer
+                    minimum: 1
+        AuditLogEntry:
+            type: object
+            required:
+                [id, user_id, event, auditable_type, auditable_id, created_at]
+            properties:
+                id:
+                    type: integer
+                user_id:
+                    type: [integer, 'null']
+                event:
+                    type: string
+                auditable_type:
+                    type: [string, 'null']
+                auditable_id:
+                    type: [integer, 'null']
+                created_at:
+                    type: string
+                    format: date-time
+
+        AccountEmail:
+            type: object
+            required: [email]
+            properties:
+                email:
+                    type: string
+                    format: email
+                    maxLength: 255
+        AccountPassword:
+            type: object
+            required: [password, password_confirmation]
+            properties:
+                password:
+                    type: string
+                    format: password
+                    minLength: 12
+                    maxLength: 72
+                    description: Include lower and upper case letters, a number, and a symbol. Maximum 72 UTF-8 bytes.
+                password_confirmation:
+                    type: string
+                    format: password
+        UpdateCustomerProfile:
+            type: object
+            required: [name]
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+        RegisterCustomer:
+            allOf:
+                - $ref: '#/components/schemas/AccountEmail'
+                - $ref: '#/components/schemas/AccountPassword'
+                - $ref: '#/components/schemas/UpdateCustomerProfile'
+        ResetCustomerPassword:
+            allOf:
+                - $ref: '#/components/schemas/AccountEmail'
+                - $ref: '#/components/schemas/AccountPassword'
+                - type: object
+                  required: [token]
+                  properties:
+                      token:
+                          type: string
+        ChangeCustomerPassword:
+            allOf:
+                - $ref: '#/components/schemas/AccountPassword'
+                - type: object
+                  required: [current_password]
+                  properties:
+                      current_password:
+                          type: string
+                          format: password
+
+        AccessGrant:
+            type: object
+            required:
+                [
+                    access_token,
+                    token_type,
+                    expires_at,
+                    identity_type,
+                    dashboard,
+                    user,
+                ]
+            properties:
+                access_token:
+                    type: string
+                token_type:
+                    const: Bearer
+                expires_at:
+                    type: string
+                    format: date-time
+                identity_type:
+                    type: string
+                    enum: [customer, staff]
+                dashboard:
+                    type: string
+                    enum: [customer, staff]
+                user:
+                    $ref: '#/components/schemas/User'
+        CurrentPassword:
+            type: object
+            required: [current_password]
+            properties:
+                current_password:
+                    type: string
+                    format: password
+        TotpCode:
+            type: object
+            required: [code]
+            properties:
+                code:
+                    type: string
+                    pattern: '^[0-9]{6}$'
+        PasswordAndTotpCode:
+            allOf:
+                - $ref: '#/components/schemas/CurrentPassword'
+                - $ref: '#/components/schemas/TotpCode'
+        TwoFactorEnrollment:
+            type: object
+            required: [secret, provisioning_uri, expires_at]
+            properties:
+                secret:
+                    type: string
+                    pattern: '^[A-Z2-7]{32}$'
+                provisioning_uri:
+                    type: string
+                    format: uri
+                expires_at:
+                    type: string
+                    format: date-time
+        TwoFactorChallenge:
+            type: object
+            required: [two_factor_required, challenge_token, expires_at]
+            properties:
+                two_factor_required:
+                    const: true
+                challenge_token:
+                    type: string
+                    pattern: '^[a-f0-9]{64}$'
+                expires_at:
+                    type: string
+                    format: date-time
+        CompleteTwoFactorChallenge:
+            type: object
+            required: [challenge_token, code]
+            properties:
+                challenge_token:
+                    type: string
+                    pattern: '^[a-f0-9]{64}$'
+                code:
+                    type: string
+                    pattern: '^(?:[0-9]{6}|[a-f0-9]{32})$'
+        RecoveryCodes:
+            type: object
+            required: [recovery_codes]
+            properties:
+                recovery_codes:
+                    type: array
+                    minItems: 8
+                    maxItems: 8
+                    items:
+                        type: string
+                        pattern: '^[a-f0-9]{32}$'
+        StaffAccount:
+            allOf:
+                - $ref: '#/components/schemas/User'
+                - type: object
+                  properties:
+                      active:
+                          type: boolean
+                      permissions:
+                          type: array
+                          items:
+                              type: string
+                  required:
+                      - active
+                      - permissions
+        StaffRole:
+            type: object
+            properties:
+                id:
+                    type: string
+                slug:
+                    type: string
+                name:
+                    type: string
+                protected:
+                    type: boolean
+                permissions:
+                    type: array
+                    items:
+                        type: string
+            required:
+                - id
+                - slug
+                - name
+                - protected
+                - permissions
+        CreateStaffRole:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 100
+                slug:
+                    type: string
+                    maxLength: 100
+                    pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$'
+            required:
+                - name
+                - slug
+        RenameStaffRole:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 100
+            required:
+                - name
+        ReplaceRolePermissions:
+            type: object
+            properties:
+                permissions:
+                    type: array
+                    items:
+                        type: string
+                    uniqueItems: true
+                    maxItems: 100
+            required:
+                - permissions
+        ReplaceStaffRoles:
+            type: object
+            properties:
+                roles:
+                    type: array
+                    items:
+                        type: string
+                    uniqueItems: true
+                    minItems: 1
+                    maxItems: 25
+            required:
+                - roles
+        UpdateStaffAccount:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                active:
+                    type: boolean
+        CreateStaffAccount:
+            allOf:
+                - $ref: '#/components/schemas/AccountEmail'
+                - $ref: '#/components/schemas/AccountPassword'
+                - $ref: '#/components/schemas/UpdateCustomerProfile'
+                - $ref: '#/components/schemas/ReplaceStaffRoles'

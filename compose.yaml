@@ -1,0 +1,79 @@
+x-laravel: &laravel
+    image: ecombackend-php84
+    build:
+        context: ./vendor/laravel/sail/runtimes/8.4
+        args:
+            WWWGROUP: '${WWWGROUP:-1000}'
+    volumes:
+        - .:/var/www/html
+    depends_on:
+        mysql:
+            condition: service_healthy
+        redis:
+            condition: service_healthy
+        mailpit:
+            condition: service_started
+
+x-laravel-environment: &laravel-environment
+    WWWUSER: '${WWWUSER:-1000}'
+    DB_CONNECTION: mysql
+    DB_URL: ''
+    DB_HOST: mysql
+    DB_PORT: '3306'
+    DB_DATABASE: '${DB_DATABASE:-ecommerce}'
+    DB_USERNAME: '${DB_USERNAME:-sail}'
+    DB_PASSWORD: '${DB_PASSWORD:?Set DB_PASSWORD in .env for local MySQL}'
+    REDIS_HOST: redis
+    QUEUE_CONNECTION: redis
+    CACHE_STORE: redis
+    MAIL_MAILER: smtp
+    MAIL_HOST: mailpit
+    MAIL_PORT: '1025'
+
+services:
+    app:
+        <<: *laravel
+        environment: *laravel-environment
+        ports:
+            - '127.0.0.1:${APP_PORT:-8000}:80'
+
+    worker:
+        <<: *laravel
+        environment:
+            <<: *laravel-environment
+            SUPERVISOR_PHP_COMMAND: /usr/bin/php -d variables_order=EGPCS /var/www/html/artisan queue:work redis --sleep=3 --tries=3 --no-interaction
+
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+            MYSQL_DATABASE: '${DB_DATABASE:-ecommerce}'
+            MYSQL_USER: '${DB_USERNAME:-sail}'
+            MYSQL_PASSWORD: '${DB_PASSWORD:?Set DB_PASSWORD in .env for local MySQL}'
+        volumes:
+            - mysql-data:/var/lib/mysql
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u "$$MYSQL_USER" "$$MYSQL_DATABASE" -e "SELECT 1"',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    redis:
+        image: redis:7-alpine
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 5s
+            timeout: 3s
+            retries: 10
+
+    mailpit:
+        image: axllent/mailpit:v1
+        ports:
+            - '127.0.0.1:${MAILPIT_PORT:-8025}:8025'
+
+volumes:
+    mysql-data:
