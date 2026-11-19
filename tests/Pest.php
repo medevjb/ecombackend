@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\StaffUser;
+use HasinHayder\Tyro\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +49,12 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function catalogStaffToken(string $role): string
+{
+    $staff = StaffUser::factory()->create();
+    $staff->account->assignRole(Role::query()->where('slug', $role)->firstOrFail());
+
+    return $staff->createToken('catalog')->plainTextToken;
 }

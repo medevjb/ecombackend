@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\V1\Admin\AttributeValueController;
 use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\BrandController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
+use App\Http\Controllers\Api\V1\Admin\ProductController;
+use App\Http\Controllers\Api\V1\Admin\ProductImageController;
+use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
 use App\Http\Controllers\Api\V1\Admin\RoleManagementController;
 use App\Http\Controllers\Api\V1\Admin\StaffManagementController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
@@ -89,3 +92,31 @@ foreach ($taxonomies as [$prefix, $name, $parameter, $controller, $permission]) 
         Route::post($record.'/restore', [$controller, 'restore'])->can($permission.'.delete')->name('restore');
     });
 }
+
+Route::prefix('admin/products')->name('admin.products.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [ProductController::class, 'index'])->can('products.view')->name('index');
+    Route::post('/', [ProductController::class, 'store'])->can('products.create')->name('store');
+    Route::post('bulk-actions', [ProductController::class, 'bulk'])->can('products.view')->name('bulk');
+    Route::get('{product}', [ProductController::class, 'show'])->can('products.view')->name('show');
+    Route::patch('{product}', [ProductController::class, 'update'])->can('products.update')->name('update');
+    Route::patch('{product}/status', [ProductController::class, 'status'])->can('products.update')->name('status');
+    Route::delete('{product}', [ProductController::class, 'destroy'])->can('products.delete')->name('destroy');
+    Route::post('{product}/restore', [ProductController::class, 'restore'])->can('products.delete')->name('restore');
+});
+
+Route::prefix('admin/products/{product}/variants')->name('admin.products.variants.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [ProductVariantController::class, 'index'])->can('products.view')->name('index');
+    Route::post('/', [ProductVariantController::class, 'store'])->can('products.update')->name('store');
+    Route::patch('{variant}', [ProductVariantController::class, 'update'])->can('products.update')->name('update');
+    Route::patch('{variant}/status', [ProductVariantController::class, 'status'])->can('products.update')->name('status');
+    Route::delete('{variant}', [ProductVariantController::class, 'destroy'])->can('products.delete')->name('destroy');
+});
+
+Route::prefix('admin/products/{product}/images')->name('admin.products.images.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [ProductImageController::class, 'index'])->can('products.view')->name('index');
+    Route::post('/', [ProductImageController::class, 'store'])->can('products.update')->name('store');
+    Route::patch('reorder', [ProductImageController::class, 'reorder'])->can('products.update')->name('reorder');
+    Route::patch('{image}', [ProductImageController::class, 'update'])->can('products.update')->name('update');
+    Route::post('{image}/replace', [ProductImageController::class, 'replace'])->can('products.update')->name('replace');
+    Route::delete('{image}', [ProductImageController::class, 'destroy'])->can('products.delete')->name('destroy');
+});

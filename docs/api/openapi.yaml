@@ -2854,6 +2854,1155 @@ paths:
                                               type: array
                                               items:
                                                   $ref: '#/components/schemas/TaxonomyTerm'
+    /api/v1/admin/products:
+        get:
+            operationId: listAdminProducts
+            summary: 'List products for staff'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List products for staff.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - draft
+                          - active
+                          - inactive
+                          - archived
+                - name: sort_by
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - name
+                          - regular_amount
+                          - created_at
+                          - published_at
+                - name: sort_direction
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                - name: trashed
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+        post:
+            operationId: createProduct
+            summary: 'Create a draft product with a default SKU'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create a draft product with a default SKU.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateProduct'
+    '/api/v1/admin/products/{product}':
+        get:
+            operationId: getAdminProduct
+            summary: 'Read a product as staff'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Read a product as staff.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        patch:
+            operationId: updateProduct
+            summary: 'Update product details and taxonomy assignments'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update product details and taxonomy assignments.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProduct'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteProduct
+            summary: 'Soft-delete a product'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete a product.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/status':
+        patch:
+            operationId: updateProductStatus
+            summary: 'Update product publication status'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update product publication status.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProductStatus'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/restore':
+        post:
+            operationId: restoreProduct
+            summary: 'Restore a product to draft'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Restore a product to draft.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/admin/products/bulk-actions:
+        post:
+            operationId: bulkProducts
+            summary: 'Apply bulk action to products'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Apply bulk action to products.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CatalogBulkResult'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogBulkAction'
+    '/api/v1/admin/products/{product}/variants':
+        get:
+            operationId: listProductVariants
+            summary: 'List product variants'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List product variants.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/ProductVariant'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+        post:
+            operationId: createProductVariant
+            summary: 'Create a unique product variant'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Create a unique product variant.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductVariant'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateProductVariant'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/variants/{variant}':
+        patch:
+            operationId: updateProductVariant
+            summary: 'Update a variant and its option combination'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update a variant and its option combination.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductVariant'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProductVariant'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteProductVariant
+            summary: 'Soft-delete a non-default variant'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Soft-delete a non-default variant.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/variants/{variant}/status':
+        patch:
+            operationId: updateProductVariantStatus
+            summary: 'Update variant availability'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update variant availability.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductVariant'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogStatusUpdate'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: variant
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/images':
+        get:
+            operationId: listProductImages
+            summary: 'List a product gallery'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'List a product gallery.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/ProductImage'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        post:
+            operationId: uploadProductImage
+            summary: 'Upload an image to a product gallery'
+            security:
+                - BearerAuth: []
+            responses:
+                201:
+                    description: 'Upload an image to a product gallery.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductImage'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                503:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/UploadProductImage'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/images/{image}/replace':
+        post:
+            operationId: replaceProductImage
+            summary: 'Replace an uploaded image file'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Replace an uploaded image file.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductImage'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                503:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/UploadProductImage'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: image
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/images/{image}':
+        patch:
+            operationId: updateProductImage
+            summary: 'Update image metadata or make it primary'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Update image metadata or make it primary.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/ProductImage'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProductImage'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: image
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+        delete:
+            operationId: deleteProductImage
+            summary: 'Remove an image from the active gallery'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Remove an image from the active gallery.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - name: image
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    '/api/v1/admin/products/{product}/images/reorder':
+        patch:
+            operationId: reorderProductImages
+            summary: 'Replace the order of the complete image gallery'
+            security:
+                - BearerAuth: []
+            responses:
+                204:
+                    description: 'Replace the order of the complete image gallery.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CatalogReorder'
+            parameters:
+                - name: product
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+    /api/v1/products:
+        get:
+            operationId: listProducts
+            summary: 'Discover published products'
+            responses:
+                200:
+                    description: 'Discover published products.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: category
+                  in: query
+                  schema:
+                      type: string
+                - name: brand
+                  in: query
+                  schema:
+                      type: string
+                - name: min_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: max_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: in_stock
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - newest
+                          - price_asc
+                          - price_desc
+                          - top_selling
+                - name: 'attribute_value_ids[]'
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                          pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                      maxItems: 25
+    '/api/v1/products/{slug}':
+        get:
+            operationId: getProduct
+            summary: 'Read product detail and variants'
+            responses:
+                200:
+                    description: 'Read product detail and variants.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/Product'
+                404:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+    '/api/v1/products/{slug}/related':
+        get:
+            operationId: listRelatedProducts
+            summary: 'List related published products'
+            responses:
+                200:
+                    description: 'List related published products.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                404:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+    /api/v1/collections/new-arrivals:
+        get:
+            operationId: listNewArrivals
+            summary: 'List newest published products'
+            responses:
+                200:
+                    description: 'List newest published products.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: category
+                  in: query
+                  schema:
+                      type: string
+                - name: brand
+                  in: query
+                  schema:
+                      type: string
+                - name: min_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: max_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: in_stock
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - newest
+                          - price_asc
+                          - price_desc
+                          - top_selling
+                - name: 'attribute_value_ids[]'
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                          pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                      maxItems: 25
+    /api/v1/collections/top-selling:
+        get:
+            operationId: listTopSellers
+            summary: 'List products ordered by paid quantity'
+            responses:
+                200:
+                    description: 'List products ordered by paid quantity.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                - name: per_page
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+                - name: search
+                  in: query
+                  schema:
+                      type: string
+                      maxLength: 100
+                - name: category
+                  in: query
+                  schema:
+                      type: string
+                - name: brand
+                  in: query
+                  schema:
+                      type: string
+                - name: min_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: max_price
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                      description: 'USD minor units.'
+                - name: in_stock
+                  in: query
+                  schema:
+                      type: integer
+                      enum:
+                          - 0
+                          - 1
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - newest
+                          - price_asc
+                          - price_desc
+                          - top_selling
+                - name: 'attribute_value_ids[]'
+                  in: query
+                  schema:
+                      type: array
+                      items:
+                          type: string
+                          pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                      maxItems: 25
 components:
     securitySchemes:
         BearerAuth:
@@ -3565,3 +4714,356 @@ components:
                 - succeeded_ids
                 - failed
                 - counts
+        Product:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                    maxLength: 255
+                description:
+                    type:
+                        - string
+                        - 'null'
+                short_description:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 500
+                regular_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                sale_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                featured:
+                    type: boolean
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                current_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                discount_percent:
+                    type: integer
+                currency:
+                    const: USD
+                status:
+                    type: string
+                    enum:
+                        - draft
+                        - active
+                        - inactive
+                        - archived
+                published_at:
+                    type:
+                        - string
+                        - 'null'
+                    format: date-time
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Category'
+                brand:
+                    anyOf:
+                        - $ref: '#/components/schemas/TaxonomyTerm'
+                        - type: 'null'
+                in_stock:
+                    type: boolean
+                rating_count:
+                    type: integer
+                rating_average:
+                    type:
+                        - number
+                        - 'null'
+                images:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ProductImage'
+                variants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ProductVariant'
+            required:
+                - id
+                - name
+                - slug
+                - regular_amount
+                - current_amount
+                - currency
+                - status
+        CreateProduct:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                    maxLength: 255
+                description:
+                    type:
+                        - string
+                        - 'null'
+                short_description:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 500
+                regular_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                sale_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                featured:
+                    type: boolean
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+                sku:
+                    type: string
+                    maxLength: 100
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$'
+                category_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                brand_id:
+                    type:
+                        - string
+                        - 'null'
+            required:
+                - name
+                - slug
+                - sku
+                - regular_amount
+        UpdateProduct:
+            type: object
+            properties:
+                name:
+                    type: string
+                    maxLength: 255
+                slug:
+                    type: string
+                    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                    maxLength: 255
+                description:
+                    type:
+                        - string
+                        - 'null'
+                short_description:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 500
+                regular_amount:
+                    type: integer
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                sale_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                featured:
+                    type: boolean
+                seo_title:
+                    type:
+                        - string
+                        - 'null'
+                seo_description:
+                    type:
+                        - string
+                        - 'null'
+                category_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 100
+                brand_id:
+                    type:
+                        - string
+                        - 'null'
+        UpdateProductStatus:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum:
+                        - draft
+                        - active
+                        - inactive
+                        - archived
+            required:
+                - status
+        ProductVariant:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                sku:
+                    type: string
+                    maxLength: 100
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$'
+                is_default:
+                    type: boolean
+                status:
+                    type: string
+                    enum:
+                        - active
+                        - inactive
+                price_override_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                options:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TaxonomyTerm'
+                in_stock:
+                    type: boolean
+            required:
+                - id
+                - sku
+                - is_default
+                - status
+        CreateProductVariant:
+            type: object
+            properties:
+                sku:
+                    type: string
+                    maxLength: 100
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$'
+                price_override_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                option_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 20
+                    minItems: 1
+            required:
+                - sku
+                - option_ids
+        UpdateProductVariant:
+            type: object
+            properties:
+                sku:
+                    type: string
+                    maxLength: 100
+                    pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$'
+                price_override_amount:
+                    type:
+                        - integer
+                        - 'null'
+                    minimum: 0
+                    maximum: 9007199254740991
+                    description: 'USD minor units.'
+                option_ids:
+                    type: array
+                    items:
+                        type: string
+                        pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                    uniqueItems: true
+                    maxItems: 20
+                    minItems: 1
+        ProductImage:
+            type: object
+            properties:
+                id:
+                    type: string
+                    pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                url:
+                    type: string
+                alt_text:
+                    type:
+                        - string
+                        - 'null'
+                is_primary:
+                    type: boolean
+                sort_order:
+                    type: integer
+            required:
+                - id
+                - url
+                - is_primary
+                - sort_order
+        UploadProductImage:
+            type: object
+            properties:
+                image:
+                    type: string
+                    format: binary
+                alt_text:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 255
+                primary:
+                    type: string
+                    enum:
+                        - '0'
+                        - '1'
+            required:
+                - image
+        UpdateProductImage:
+            type: object
+            properties:
+                alt_text:
+                    type:
+                        - string
+                        - 'null'
+                    maxLength: 255
+                primary:
+                    type: boolean

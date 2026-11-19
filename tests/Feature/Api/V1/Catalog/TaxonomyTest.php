@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 it('exposes only active brands and round trips their lifecycle', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('product-manager'));
+    $this->withToken(catalogStaffToken('product-manager'));
     Brand::factory()->create(['name' => 'Hidden', 'status' => CatalogStatus::Inactive]);
 
     $brand = $this->postJson('/api/v1/admin/brands', [
@@ -36,7 +36,7 @@ it('exposes only active brands and round trips their lifecycle', function () {
 
 it('scopes option slugs and record access to their attribute', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('product-manager'));
+    $this->withToken(catalogStaffToken('product-manager'));
     [$size, $other] = ProductAttribute::factory()->count(2)->create()->all();
     $value = AttributeValue::factory()->for($size, 'attribute')->create(['slug' => 'small']);
 
@@ -60,7 +60,7 @@ it('scopes option slugs and record access to their attribute', function () {
 
 it('returns paginated admin taxonomy records with an allowlisted sort', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('support'));
+    $this->withToken(catalogStaffToken('support'));
     Brand::factory()->create(['name' => 'Alpha']);
     Brand::factory()->create(['name' => 'Zebra']);
 

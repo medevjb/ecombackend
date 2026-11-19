@@ -2,6 +2,8 @@
 
 return [
 
+    'product_media_disk' => env('PRODUCT_MEDIA_DISK', 'public'),
+
     /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk

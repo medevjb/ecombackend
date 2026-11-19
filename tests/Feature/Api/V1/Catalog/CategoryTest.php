@@ -2,19 +2,9 @@
 
 use App\Enums\CatalogStatus;
 use App\Models\Category;
-use App\Models\StaffUser;
 use Database\Seeders\StaffAccessSeeder;
-use HasinHayder\Tyro\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-
-function categoryStaffToken(string $role): string
-{
-    $staff = StaffUser::factory()->create();
-    $staff->account->assignRole(Role::query()->where('slug', $role)->firstOrFail());
-
-    return $staff->createToken('catalog')->plainTextToken;
-}
 
 it('lists only visible category trees and hides descendants of inactive or deleted parents', function () {
     $root = Category::factory()->create(['slug' => 'clothing']);
@@ -34,7 +24,7 @@ it('lists only visible category trees and hides descendants of inactive or delet
 
 it('prevents cycles and duplicate slugs and audits authorized category edits', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('product-manager'));
+    $this->withToken(catalogStaffToken('product-manager'));
     $root = Category::factory()->create();
     $child = Category::factory()->for($root, 'parent')->create();
 
@@ -59,7 +49,7 @@ it('prevents cycles and duplicate slugs and audits authorized category edits', f
 
 it('reorders complete sibling groups and rejects incomplete requests', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('product-manager'));
+    $this->withToken(catalogStaffToken('product-manager'));
     [$one, $two] = Category::factory()->count(2)->create()->all();
 
     $this->patchJson('/api/v1/admin/categories/reorder', ['ids' => [$two->public_id]])
@@ -74,7 +64,7 @@ it('reorders complete sibling groups and rejects incomplete requests', function 
 
 it('returns partial bulk results and restores archived categories', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('product-manager'));
+    $this->withToken(catalogStaffToken('product-manager'));
     $category = Category::factory()->create();
     $missing = (string) Str::ulid();
 
@@ -92,7 +82,7 @@ it('returns partial bulk results and restores archived categories', function () 
 
 it('allows support to view categories but denies changes', function () {
     $this->seed(StaffAccessSeeder::class);
-    $this->withToken(categoryStaffToken('support'));
+    $this->withToken(catalogStaffToken('support'));
     $this->getJson('/api/v1/admin/categories')->assertOk();
 
     Auth::forgetGuards();
