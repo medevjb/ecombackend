@@ -1,8 +1,18 @@
 <?php
 
+use App\Enums\ProductStatus;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Category;
+use App\Models\CustomerAddress;
+use App\Models\Inventory;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\StaffUser;
+use App\Models\User;
 use HasinHayder\Tyro\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Stripe\PaymentIntent;
 use Tests\TestCase;
 
 /*
@@ -59,4 +69,32 @@ function catalogStaffToken(string $role): string
     $staff->account->assignRole(Role::query()->where('slug', $role)->firstOrFail());
 
     return $staff->createToken('catalog')->plainTextToken;
+}
+
+function checkoutFixture(int $stock = 2): array
+{
+    $customer = User::factory()->create();
+    $address = CustomerAddress::factory()->create(['user_id' => $customer->id, 'line1' => '100 Original Street']);
+    $cart = Cart::factory()->create(['user_id' => $customer->id]);
+    $product = Product::factory()->create(['status' => ProductStatus::Active, 'regular_amount' => 4200, 'name' => 'Original shirt']);
+    $product->categories()->attach(Category::factory()->create());
+    $variant = ProductVariant::factory()->for($product)->create();
+    $inventory = Inventory::factory()->for($variant, 'variant')->create(['on_hand' => $stock]);
+    CartItem::factory()->create(['cart_id' => $cart->id, 'product_variant_id' => $variant->id]);
+
+    return [$customer, $address, $product, $inventory, $cart];
+}
+
+function checkoutIntent(string $checkoutId, int $amount, string $status = 'requires_payment_method'): PaymentIntent
+{
+    return PaymentIntent::constructFrom([
+        'id' => 'pi_test_fixture',
+        'amount' => $amount,
+        'amount_received' => $status === 'succeeded' ? $amount : 0,
+        'currency' => 'usd',
+        'client_secret' => 'pi_test_fixture_secret_example',
+        'livemode' => false,
+        'status' => $status,
+        'metadata' => ['checkout_id' => $checkoutId],
+    ]);
 }

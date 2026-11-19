@@ -60,7 +60,7 @@
 | A-01 | Checkout identity | Guest browsing/cart; authenticated checkout | Auth, checkout API |
 | A-02 | Store currency | USD only for test/demo, integer cents | Pricing, Stripe |
 | A-03 | Taxes | Configurable tax policy, zero for demo | Totals, order snapshot |
-| A-04 | Shipping | Configurable flat rate, one shipping address per order | Checkout, shipping |
+| A-04 | Shipping | Flat rate defaults to $5.00 USD, editable by staff with shipping permission. One shipping address per order. | Checkout, shipping |
 | A-05 | Inventory | One logical location; reservation + paid deduction | Inventory schema |
 | A-06 | Product options | Simple product plus optional size/color variants | Catalog, cart |
 | A-07 | Staff identities | `users` for customers, `staff_users` for staff | Guards, migrations |

@@ -7,10 +7,12 @@ use App\Http\Controllers\Api\V1\Admin\BrandController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\CouponController;
 use App\Http\Controllers\Api\V1\Admin\InventoryController;
+use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
 use App\Http\Controllers\Api\V1\Admin\RoleManagementController;
+use App\Http\Controllers\Api\V1\Admin\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Admin\StaffManagementController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\StaffAccountController;
@@ -138,4 +140,18 @@ Route::prefix('admin/coupons')->name('admin.coupons.')->middleware('auth:staff')
     Route::delete('{coupon}', [CouponController::class, 'destroy'])->can('coupons.manage')->name('destroy');
     Route::post('{coupon}/restore', [CouponController::class, 'restore'])->can('coupons.manage')->name('restore');
     Route::post('bulk-actions', [CouponController::class, 'bulk'])->can('coupons.manage')->name('bulk');
+});
+
+Route::prefix('admin/orders')->name('admin.orders.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [OrderController::class, 'index'])->can('orders.view')->name('index');
+    Route::get('{order}', [OrderController::class, 'show'])->can('orders.view')->name('show');
+    Route::post('{order}/transitions', [OrderController::class, 'transition'])->can('orders.update_status')->name('transitions.store');
+    Route::post('{order}/cancel', [OrderController::class, 'cancel'])->can('orders.update_status')->name('cancel');
+    Route::get('{order}/refunds', [OrderController::class, 'refunds'])->can('orders.refund')->name('refunds.index');
+    Route::post('{order}/refunds', [OrderController::class, 'refund'])->can('orders.refund')->name('refunds.store');
+});
+
+Route::prefix('admin/shipping-settings')->name('admin.shipping-settings.')->middleware('auth:staff')->group(function (): void {
+    Route::get('/', [ShippingSettingsController::class, 'show'])->can('shipping.manage')->name('show');
+    Route::patch('/', [ShippingSettingsController::class, 'update'])->can('shipping.manage')->name('update');
 });

@@ -49,6 +49,11 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('stripe-webhooks', fn (Request $request): Limit => Limit::perMinute(300)->by($request->ip()));
+        RateLimiter::for('checkout', fn (Request $request): array => [
+            Limit::perMinute(30)->by('ip:'.$request->ip()),
+            Limit::perMinute(12)->by('customer:'.$request->user()?->getAuthIdentifier()),
+        ]);
         RateLimiter::for('coupon-apply', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('customer-recovery', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
 

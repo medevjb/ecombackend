@@ -11,7 +11,7 @@ $management = [
     'staff.view', 'staff.manage', 'roles.view', 'roles.manage', 'audit.view',
     'inventory.view', 'inventory.adjust', 'orders.view', 'orders.update_status', 'orders.refund', 'orders.note',
     'coupons.view', 'coupons.manage', 'customers.view', 'customers.manage', 'content.view', 'content.manage',
-    'reports.view', 'reviews.manage',
+    'reports.view', 'reviews.manage', 'shipping.manage',
 ];
 
 return [

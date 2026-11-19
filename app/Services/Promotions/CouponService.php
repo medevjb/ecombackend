@@ -10,6 +10,7 @@ use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\CouponRedemption;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\StaffUser;
 use Carbon\CarbonImmutable;
@@ -147,6 +148,7 @@ class CouponService
                     'coupon_id' => $locked->id,
                     'user_id' => $cart->user_id,
                     'order_reference' => $order,
+                    'order_id' => Order::query()->where('public_id', $order)->value('id'),
                     'fingerprint' => $fingerprint,
                     'discount_amount' => $discount,
                     'status' => CouponUsageStatus::Reserved,
