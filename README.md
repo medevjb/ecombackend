@@ -61,6 +61,12 @@ The CI workflow verifies migrations and rollback on disposable MySQL 8.4, then r
 
 See [Phase 1 identity and two-factor notes](docs/decisions/0002-identity-and-two-factor.md) for staff and customer guard behavior, the login challenge flow, and email reset setup.
 
+## Interactive API reference
+
+Open `/docs` on the Laravel server to search and expand endpoints by path or HTTP method. Download the same OpenAPI document at `/docs/openapi.yaml`. Use the Postman collection below to send authenticated requests.
+
+Local seeding includes a delivered order and a cancelled order for `customer@demo.test`. These are demo records created without a Stripe transaction.
+
 ## Postman
 
 Import the [API collection](docs/api/ecommerce.postman_collection.json) and [local environment](docs/api/local.postman_environment.json), select the environment, and fill in `account_email` and `password` locally. Run **Shared login** first. It stores the customer or staff token for the matching request folders. If login returns HTTP 202, supply `totp_code` and send the staff challenge request.

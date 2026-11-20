@@ -6425,6 +6425,57 @@
               }
             }
           ]
+        },
+        {
+          "name": "Resume an owned pending Test Mode checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Resume an owned pending Test Mode checkout.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{order_id}}/resume-checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "resume-checkout"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.environment.set(\"order_id\", data.order_id);",
+                  "  pm.environment.set(\"checkout_id\", data.checkout_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },

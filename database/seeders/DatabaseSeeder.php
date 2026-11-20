@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
                 StorefrontContentSeeder::class,
                 DemoStorefrontBrandingSeeder::class,
                 DemoMediaSeeder::class,
+                DemoOrderSeeder::class,
             ]);
         }
     }

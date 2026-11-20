@@ -45,3 +45,21 @@ it('validates links and keeps staff content operations scoped to their resource'
     $this->patchJson('/api/v1/admin/site-settings', ['data' => ['image_fallback_url' => '/placeholder.webp']])->assertOk();
     $this->getJson('/api/v1/storefront/settings')->assertOk()->assertJsonPath('data.image_fallback_url', '/placeholder.webp');
 });
+
+it('isolates rate limits for clients behind an explicitly trusted proxy', function () {
+    config(['trustedproxy.proxies' => ['192.0.2.10']]);
+    $endpoint = '/api/v1/newsletter/unsubscribe';
+
+    $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.10']);
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $this->postJson($endpoint, [], ['X-Forwarded-For' => '198.51.100.10'])->assertUnprocessable();
+    }
+    $this->postJson($endpoint, [], ['X-Forwarded-For' => '198.51.100.10'])->assertTooManyRequests();
+    $this->postJson($endpoint, [], ['X-Forwarded-For' => '198.51.100.11'])->assertUnprocessable();
+
+    $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.20']);
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $this->postJson($endpoint, [], ['X-Forwarded-For' => '203.0.113.10'])->assertUnprocessable();
+    }
+    $this->postJson($endpoint, [], ['X-Forwarded-For' => '203.0.113.11'])->assertTooManyRequests();
+});

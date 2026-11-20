@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Enums\RefundStatus;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -53,6 +55,12 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    /** @return HasMany<OrderRefund, $this> */
+    public function pendingCancellationRefunds(): HasMany
+    {
+        return $this->hasMany(OrderRefund::class)->where('purpose', 'cancellation')->where('status', RefundStatus::Pending);
     }
 
     /** @return BelongsTo<CheckoutAttempt, $this> */

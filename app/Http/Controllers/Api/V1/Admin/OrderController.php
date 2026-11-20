@@ -32,7 +32,7 @@ class OrderController extends Controller
             'page' => ['sometimes', 'integer', 'min:1', 'max:2147483647'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
-        $query = Order::query()->with('payment')->latest('id');
+        $query = Order::query()->with('payment')->withExists('pendingCancellationRefunds as cancellation_refund_pending')->latest('id');
         foreach (['number', 'status'] as $field) {
             if (isset($filters[$field])) {
                 $query->where($field, $filters[$field]);
@@ -50,7 +50,7 @@ class OrderController extends Controller
 
     public function show(Request $request, string $order, OrderDetails $details): JsonResponse
     {
-        return $this->apiSuccess($request, new OrderResource($details->hydrate($this->find($order))), 'Order retrieved.')
+        return $this->apiSuccess($request, new OrderResource($details->hydrate($this->find($order)->loadExists('pendingCancellationRefunds as cancellation_refund_pending'))), 'Order retrieved.')
             ->header('Cache-Control', 'no-store');
     }
 

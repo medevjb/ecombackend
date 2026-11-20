@@ -154,5 +154,38 @@
     "images": [
       "striped-tee.png"
     ]
+  },
+  {
+    "slug": "weekend-poplin-shirt",
+    "name": "Weekend Poplin Shirt",
+    "description": "Lightweight button-front poplin shirt with a relaxed fit.",
+    "regular_amount": 6900,
+    "sale_amount": null,
+    "category": "shirts",
+    "images": [
+      "shirt-full.png"
+    ]
+  },
+  {
+    "slug": "studio-graphic-tee",
+    "name": "Studio Graphic Tee",
+    "description": "Soft cotton jersey tee with a bold graphic print.",
+    "regular_amount": 4600,
+    "sale_amount": null,
+    "category": "t-shirts",
+    "images": [
+      "gradient-tee.png"
+    ]
+  },
+  {
+    "slug": "washed-straight-jeans",
+    "name": "Washed Straight Jeans",
+    "description": "Straight-leg denim with a soft washed finish.",
+    "regular_amount": 9200,
+    "sale_amount": null,
+    "category": "jeans",
+    "images": [
+      "pent2.png"
+    ]
   }
 ]

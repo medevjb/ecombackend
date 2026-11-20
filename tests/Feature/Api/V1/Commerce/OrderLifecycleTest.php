@@ -96,10 +96,17 @@ it('restores inventory once only after a paid cancellation refund succeeds', fun
     expect($stock->refresh()->on_hand)->toBe(1);
     $this->assertDatabaseHas('orders', ['status' => 'paid']);
 
+    $orderPath = '/api/v1/admin/orders/'.$id;
+    $this->getJson($orderPath)->assertOk()->assertJsonPath('data.cancellation_refund_pending', true);
+    $this->getJson('/api/v1/admin/orders')->assertOk()->assertJsonPath('data.0.cancellation_refund_pending', true);
+    $this->postJson($orderPath.'/transitions', ['status' => 'processing'])
+        ->assertConflict()->assertJsonPath('errors.code', 'REFUND_PENDING');
+
     $handler = app(OrderRefunds::class);
     $handler->submit($refund->id);
     $handler->submit($refund->id);
     $this->assertDatabaseHas('orders', ['status' => 'cancelled']);
+    $this->getJson($orderPath)->assertOk()->assertJsonPath('data.cancellation_refund_pending', false);
     $this->assertDatabaseHas('payments', ['status' => 'refunded']);
     $this->assertDatabaseHas('product_metrics', ['product_id' => $product->id, 'paid_quantity' => 0]);
     expect($stock->refresh()->on_hand)->toBe(2);

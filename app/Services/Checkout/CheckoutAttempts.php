@@ -37,6 +37,26 @@ class CheckoutAttempts
     {
         $this->stripe->ensureConfigured();
         $attempt = $this->prepare($customer, strtolower($addressId), hash('sha256', $key));
+
+        return $this->preparePayment($attempt);
+    }
+
+    /** @return array<string, mixed> */
+    public function resume(User $customer, string $orderId): array
+    {
+        $order = Order::query()->where('user_id', $customer->id)->where('public_id', $orderId)->with('payment')->firstOrFail();
+        if ($order->status !== OrderStatus::Pending || $order->payment->status !== PaymentStatus::Pending) {
+            throw new ApiProblem('CHECKOUT_NOT_PENDING', 'This order no longer has a pending checkout.');
+        }
+
+        $this->stripe->ensureConfigured();
+
+        return $this->preparePayment($order->checkoutAttempt->setRelation('order', $order));
+    }
+
+    /** @return array<string, mixed> */
+    private function preparePayment(CheckoutAttempt $attempt): array
+    {
         $order = $attempt->order;
         $payment = $order->payment;
 

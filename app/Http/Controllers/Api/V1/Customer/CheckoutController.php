@@ -11,6 +11,7 @@ use App\Services\Checkout\CheckoutAttempts;
 use App\Services\Checkout\CheckoutPricing;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
@@ -35,5 +36,14 @@ class CheckoutController extends Controller
         $checkout = $attempts->start($customer, $request->validated('address_id'), $key);
 
         return $this->apiSuccess($request, $checkout, 'Checkout attempt prepared.')->header('Cache-Control', 'no-store');
+    }
+
+    public function resume(Request $request, string $order, CheckoutAttempts $attempts): JsonResponse
+    {
+        $customer = $request->user();
+        abort_unless($customer instanceof User, 401);
+        $checkout = $attempts->resume($customer, $order);
+
+        return $this->apiSuccess($request, $checkout, 'Checkout attempt resumed.')->header('Cache-Control', 'no-store');
     }
 }

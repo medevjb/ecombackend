@@ -4,7 +4,7 @@ Import the [collection](ecommerce.postman_collection.json) and [local environmen
 
 ## Five-minute walkthrough
 
-1. Run **Register** with a new customer email, then **Shared login** with that email. Confirm that `data.dashboard` is `customer` and Postman stored the token. Open **New Arrivals**, select an in-stock variant, and fill the collection's product and variant variables.
+1. Run **Register** with a new customer email. Read the six-digit code from Mailpit or your local mail log. Run **Verify a customer email with a code** with that email and code, then run **Shared login**. Confirm that `data.dashboard` is `customer` and Postman stored the token. Open **New Arrivals**, select an in-stock variant, and fill the collection's product and variant variables.
 2. Run **Add cart item**, apply the seeded `DEMO10` coupon, and create a shipping address. Set `address_id` from its response. Run **Checkout preview** and review the server-calculated discount, shipping, and total.
 3. Run **Create or resume a pending Test Mode checkout** with a fresh `checkout_key`. Confirm the returned PaymentIntent client secret with Stripe.js in the storefront using a Test Mode payment method, or use the Stripe dashboard or CLI to confirm the corresponding Test Mode PaymentIntent. Reusing the checkout key returns the same attempt.
 4. After Stripe forwards the signed success event and the queue processes it, read the customer order. Sign in via the same **Shared login** request as Super Admin, Admin, or Order Manager. Use the staff order transitions to move the order to processing, shipped with carrier and tracking, then delivered.

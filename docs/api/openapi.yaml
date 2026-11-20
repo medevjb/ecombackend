@@ -5218,6 +5218,48 @@ paths:
                       type: string
                       maxLength: 128
                       pattern: '^[A-Za-z0-9._:-]+$'
+    '/api/v1/orders/{order}/resume-checkout':
+        post:
+            operationId: resumeCheckout
+            summary: 'Resume an owned pending Test Mode checkout'
+            security:
+                - BearerAuth: []
+            responses:
+                200:
+                    description: 'Resume an owned pending Test Mode checkout.'
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/CheckoutAttempt'
+                400:
+                    $ref: '#/components/responses/Error'
+                401:
+                    $ref: '#/components/responses/Error'
+                403:
+                    $ref: '#/components/responses/Error'
+                404:
+                    $ref: '#/components/responses/Error'
+                409:
+                    $ref: '#/components/responses/Error'
+                422:
+                    $ref: '#/components/responses/Error'
+                429:
+                    $ref: '#/components/responses/Error'
+                503:
+                    $ref: '#/components/responses/Error'
+            parameters:
+                - name: order
+                  in: path
+                  required: true
+                  schema:
+                      type: string
     /api/v1/orders:
         get:
             operationId: listCustomerOrders
@@ -10481,6 +10523,9 @@ components:
                         - shipped
                         - delivered
                         - cancelled
+                cancellation_refund_pending:
+                    type: boolean
+                    description: Whether fulfillment is paused by a pending cancellation refund. Present on staff order list and detail responses.
                 captured_amount:
                     type: integer
                     minimum: 0

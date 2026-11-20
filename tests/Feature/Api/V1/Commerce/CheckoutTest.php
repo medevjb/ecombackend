@@ -59,3 +59,32 @@ it('rejects production Stripe keys and does not reserve stock without test-mode 
     expect($stock->refresh()->reserved)->toBe(0);
     $this->assertDatabaseCount('orders', 0);
 });
+
+it('resumes an owned pending order without the original checkout key', function () {
+    config(['checkout.flat_shipping_amount' => 300]);
+    [$customer, $address, , $stock] = checkoutFixture();
+    [$otherCustomer] = checkoutFixture();
+    $gateway = $this->mock(StripePayments::class);
+    $gateway->shouldReceive('ensureConfigured')->twice();
+    $gateway->shouldReceive('createIntent')->once()->andReturnUsing(fn (string $checkoutId, int $amount) => checkoutIntent($checkoutId, $amount));
+    $gateway->shouldReceive('getIntent')->once()->andReturnUsing(function (): PaymentIntent {
+        $order = Order::query()->firstOrFail();
+
+        return checkoutIntent($order->checkoutAttempt->public_id, $order->total_amount);
+    });
+    $token = $customer->createToken('customer')->plainTextToken;
+    $checkout = $this->withToken($token)->postJson('/api/v1/checkout', ['address_id' => $address->public_id], ['Idempotency-Key' => 'original-tab'])
+        ->assertOk()->json('data');
+    $path = '/api/v1/orders/'.$checkout['order_id'].'/resume-checkout';
+
+    Auth::forgetGuards();
+    $this->withToken($otherCustomer->createToken('customer')->plainTextToken)->postJson($path)->assertNotFound();
+    Auth::forgetGuards();
+    $this->withToken($token)->postJson($path)->assertOk()
+        ->assertJsonPath('data.checkout_id', $checkout['checkout_id'])
+        ->assertJsonPath('data.client_secret', $checkout['client_secret'])
+        ->assertJsonPath('data.total_amount', $checkout['total_amount']);
+
+    $this->assertDatabaseCount('orders', 1);
+    expect($stock->refresh()->reserved)->toBe(1);
+});

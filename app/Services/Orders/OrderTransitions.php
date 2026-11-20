@@ -4,11 +4,9 @@ namespace App\Services\Orders;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
-use App\Enums\RefundStatus;
 use App\Exceptions\ApiProblem;
 use App\Jobs\SendOrderStatusNotice;
 use App\Models\Order;
-use App\Models\OrderRefund;
 use App\Models\StaffUser;
 use HasinHayder\Tyro\Support\TyroAudit;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +29,7 @@ class OrderTransitions
                 default => null,
             };
 
-            if (OrderRefund::query()->where('order_id', $order->id)->where('purpose', 'cancellation')
-                ->where('status', RefundStatus::Pending)->exists()) {
+            if ($order->pendingCancellationRefunds()->exists()) {
                 throw new ApiProblem('REFUND_PENDING', 'Fulfilment is paused while cancellation is pending.');
             }
             if ($next !== $allowed) {

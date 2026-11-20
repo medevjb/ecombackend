@@ -24,6 +24,7 @@ Route::middleware(['auth:customer', 'can:customer-account'])->group(function ():
     Route::delete('me/wishlist/{product}', [WishlistController::class, 'destroy'])->whereUlid('product')->name('customer.wishlist.destroy');
     Route::get('orders', [OrderController::class, 'index'])->name('customer.orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('customer.orders.show');
+    Route::post('orders/{order}/resume-checkout', [CheckoutController::class, 'resume'])->whereUlid('order')->middleware('throttle:checkout')->name('customer.checkout.resume');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('customer.orders.cancel');
 });
 
