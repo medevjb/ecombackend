@@ -22,10 +22,14 @@ class ProductDiscovery
     public function query(array $filters = []): Builder
     {
         $tree = $this->tree->visible();
-        $selected = isset($filters['category']) ? $this->tree->findVisible($tree, $filters['category']) : null;
-        $categories = $this->categoryIds(isset($filters['category'])
-            ? new Collection($selected === null ? [] : [$selected])
-            : $tree);
+        $selectedCategorySlugs = $filters['categories'] ?? (isset($filters['category']) ? [$filters['category']] : []);
+        $selectedCategories = $selectedCategorySlugs === []
+            ? $tree
+            : new Collection(array_values(array_filter(array_map(
+                fn (string $slug): ?Category => $this->tree->findVisible($tree, $slug),
+                $selectedCategorySlugs,
+            ))));
+        $categories = $this->categoryIds($selectedCategories);
         $options = $this->optionGroups($filters['attribute_value_ids'] ?? []);
         $stock = array_key_exists('in_stock', $filters) ? (bool) $filters['in_stock'] : null;
 
@@ -52,10 +56,16 @@ class ProductDiscovery
                 ->whereRaw("products.name LIKE ? ESCAPE '!'", [$search])
                 ->orWhereRaw("products.short_description LIKE ? ESCAPE '!'", [$search]));
         }
-        if (isset($filters['style'])) {
-            $styles = $this->tree->findVisible($tree, 'dress-styles');
-            $style = $styles === null ? null : $this->tree->findVisible($styles->getRelation('children'), $filters['style']);
-            $styleIds = $this->categoryIds(new Collection($style === null ? [] : [$style]));
+        $selectedStyleSlugs = $filters['styles'] ?? (isset($filters['style']) ? [$filters['style']] : []);
+        if ($selectedStyleSlugs !== []) {
+            $styleRoot = $this->tree->findVisible($tree, 'dress-styles');
+            $styleNodes = $styleRoot === null
+                ? new Collection
+                : new Collection(array_values(array_filter(array_map(
+                    fn (string $slug): ?Category => $this->tree->findVisible($styleRoot->getRelation('children'), $slug),
+                    $selectedStyleSlugs,
+                ))));
+            $styleIds = $this->categoryIds($styleNodes);
             $query->whereHas('categories', fn (Builder $category) => $category->whereIntegerInRaw('categories.id', $styleIds));
         }
         if (isset($filters['brand'])) {

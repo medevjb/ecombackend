@@ -10775,3 +10775,51 @@ components:
                 - type
                 - livemode
                 - data
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
