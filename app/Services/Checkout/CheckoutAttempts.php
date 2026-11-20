@@ -32,11 +32,14 @@ class CheckoutAttempts
         private readonly StripePayments $stripe,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function start(User $customer, string $addressId, string $key): array
+    /**
+     * @param  string|array<string, mixed>  $addressId
+     * @return array<string, mixed>
+     */
+    public function start(User $customer, string|array $addressId, string $key): array
     {
         $this->stripe->ensureConfigured();
-        $attempt = $this->prepare($customer, strtolower($addressId), hash('sha256', $key));
+        $attempt = $this->prepare($customer, is_string($addressId) ? strtolower($addressId) : $addressId, hash('sha256', $key));
 
         return $this->preparePayment($attempt);
     }
@@ -120,11 +123,16 @@ class CheckoutAttempts
         return hash('sha256', json_encode([$cart->coupon_id, $contents], JSON_THROW_ON_ERROR));
     }
 
-    private function prepare(User $customer, string $addressId, string $key): CheckoutAttempt
+    /** @param string|array<string, mixed> $addressId */
+    private function prepare(User $customer, string|array $addressId, string $key): CheckoutAttempt
     {
         return DB::transaction(function () use ($customer, $addressId, $key): CheckoutAttempt {
             User::query()->whereKey($customer->id)->lockForUpdate()->firstOrFail();
-            $fingerprint = hash('sha256', $addressId);
+            if (is_array($addressId)) {
+                $addressId = array_filter($addressId, fn (mixed $value): bool => $value !== null);
+                ksort($addressId);
+            }
+            $fingerprint = hash('sha256', is_string($addressId) ? $addressId : 'guest-address:'.json_encode($addressId, JSON_THROW_ON_ERROR));
             $existing = CheckoutAttempt::query()->where('user_id', $customer->id)->where('idempotency_hash', $key)->lockForUpdate()->first();
             if ($existing !== null) {
                 if ($existing->request_fingerprint !== $fingerprint) {
@@ -134,7 +142,7 @@ class CheckoutAttempts
                 return $existing;
             }
 
-            $address = $this->addresses->forCustomer($customer)->where('public_id', $addressId)->firstOrFail();
+            $address = $this->addresses->forCheckout($customer, $addressId);
             $cart = Cart::query()->whereKey($this->carts->forCustomer($customer)->id)->lockForUpdate()->firstOrFail();
             $cartFingerprint = $this->cartFingerprint($cart);
             if (CheckoutAttempt::query()->where('cart_id', $cart->id)->where('cart_fingerprint', $cartFingerprint)

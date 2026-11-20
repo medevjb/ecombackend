@@ -14,6 +14,13 @@ use SensitiveParameter;
 
 class AccountPasswords
 {
+    public function createResetToken(User $user): string
+    {
+        Password::broker('users')->deleteToken($user);
+
+        return Password::broker('users')->createToken($user);
+    }
+
     public function sendResetLink(string $email, bool $staff = false): void
     {
         Password::broker('users')->sendResetLink(

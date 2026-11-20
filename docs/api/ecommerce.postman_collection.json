@@ -275,6 +275,50 @@
                 }
               }
             }
+          },
+          "description": "Request a six-digit customer password reset code. The response is intentionally neutral for unknown or ineligible accounts. Documented HTTP responses: 202, 422, 429."
+        },
+        {
+          "name": "Verify a customer password reset code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Verify the six-digit password reset code and receive a single-use, short-lived reset token. Documented HTTP responses: 200, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/forgot-password/verify-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "forgot-password",
+                "verify-code"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verification_token\": \"{{verification_token}}\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -590,7 +634,7 @@
                 "value": "application/json"
               }
             ],
-            "description": "Verify a customer email address using the six-digit code sent during registration or login. Documented HTTP responses: 200, 422, 429.",
+            "description": "Verify the six-digit code issued during registration or login. A successful response marks the email verified and returns a storefront bearer token. Documented HTTP responses: 200, 422, 429.",
             "url": {
               "raw": "{{base_url}}/api/v1/auth/email/verify-code",
               "host": [
@@ -610,7 +654,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{account_email}}\",\n  \"code\": \"123456\"\n}",
+              "raw": "{\n  \"verification_token\": \"{{verification_token}}\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

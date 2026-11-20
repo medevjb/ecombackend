@@ -15,6 +15,14 @@ class AddressBook
         return CustomerAddress::query()->where('user_id', $owner->id);
     }
 
+    /** @param string|array<string, mixed> $address */
+    public function forCheckout(User $owner, string|array $address): CustomerAddress
+    {
+        return is_array($address)
+            ? new CustomerAddress($address)
+            : $this->forCustomer($owner)->where('public_id', $address)->firstOrFail();
+    }
+
     /** @param array<string, mixed> $data */
     public function save(User $owner, ?string $addressId, array $data): CustomerAddress
     {

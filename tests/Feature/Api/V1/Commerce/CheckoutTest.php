@@ -88,3 +88,29 @@ it('resumes an owned pending order without the original checkout key', function 
     $this->assertDatabaseCount('orders', 1);
     expect($stock->refresh()->reserved)->toBe(1);
 });
+
+it('prices and snapshots a one-time address without saving it to the address book', function () {
+    [$customer, $saved] = checkoutFixture();
+    $saved->delete();
+    $gateway = $this->mock(StripePayments::class);
+    $gateway->shouldReceive('ensureConfigured')->twice();
+    $gateway->shouldReceive('createIntent')->once()->andReturnUsing(fn (string $id, int $amount) => checkoutIntent($id, $amount));
+    $gateway->shouldReceive('getIntent')->once()->andReturnUsing(function (): PaymentIntent {
+        $order = Order::query()->firstOrFail();
+
+        return checkoutIntent($order->checkoutAttempt->public_id, $order->total_amount);
+    });
+    $address = ['recipient' => 'Online Shopper', 'line1' => '33 One-Time Lane', 'city' => 'Austin', 'postal_code' => '78701', 'country' => 'us'];
+    $this->withToken($customer->createToken('customer')->plainTextToken);
+    $this->postJson('/api/v1/checkout/preview', ['address' => $address])->assertOk()
+        ->assertJsonPath('data.can_checkout', true)->assertJsonPath('data.address.country', 'US');
+    $this->postJson('/api/v1/checkout/preview', ['address' => $address, 'address_id' => $saved->public_id])->assertUnprocessable();
+    $headers = ['Idempotency-Key' => 'one-time-address'];
+    $order = $this->postJson('/api/v1/checkout', ['address' => $address], $headers)->assertOk()->json('data.order_id');
+    $this->postJson('/api/v1/checkout', ['address' => array_reverse($address, true)], $headers)->assertOk()
+        ->assertJsonPath('data.order_id', $order);
+
+    $this->assertDatabaseCount('customer_addresses', 0);
+    $this->assertDatabaseCount('orders', 1);
+    $this->assertDatabaseHas('order_addresses', ['line1' => '33 One-Time Lane', 'country' => 'US']);
+});

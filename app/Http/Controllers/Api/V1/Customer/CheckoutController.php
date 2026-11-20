@@ -21,7 +21,7 @@ class CheckoutController extends Controller
     {
         $customer = $request->user();
         abort_unless($customer instanceof User, 401);
-        $address = $addresses->forCustomer($customer)->where('public_id', $request->validated('address_id'))->firstOrFail();
+        $address = $addresses->forCheckout($customer, $request->shippingAddress());
         $quote = $pricing->quote($carts->forCustomer($customer), $address);
 
         return $this->apiSuccess($request, $quote, 'Checkout preview calculated.')->header('Cache-Control', 'no-store');
@@ -33,7 +33,7 @@ class CheckoutController extends Controller
         abort_unless($customer instanceof User, 401);
 
         $key = $request->validated('idempotency_key');
-        $checkout = $attempts->start($customer, $request->validated('address_id'), $key);
+        $checkout = $attempts->start($customer, $request->shippingAddress(), $key);
 
         return $this->apiSuccess($request, $checkout, 'Checkout attempt prepared.')->header('Cache-Control', 'no-store');
     }

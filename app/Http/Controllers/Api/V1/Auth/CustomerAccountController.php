@@ -22,9 +22,14 @@ class CustomerAccountController extends Controller
             $request->validated('email'),
             $request->validated('password'),
         );
-        $verificationCodes->send($user);
+        $verificationToken = $verificationCodes->issue($user, CustomerEmailVerificationCodes::PURPOSE_REGISTRATION);
 
-        return $this->apiSuccess($request, new UserResource($user), 'Customer account created.', 201);
+        return $this->apiSuccess($request, [
+            'email_verification_required' => true,
+            'email' => $user->email,
+            'verification_token' => $verificationToken,
+            'user' => new UserResource($user),
+        ], 'Customer account created. Check your email for a verification code.', 201)->header('Cache-Control', 'no-store');
     }
 
     public function update(UpdateProfileRequest $request): JsonResponse

@@ -47,7 +47,7 @@ class CheckoutPricing
             'total_amount' => $total,
             'coupon' => $cartQuote['coupon'],
             'items' => $cartQuote['items'],
-            'address' => ['id' => $address->public_id] + $address->only([
+            'address' => ['id' => $address->getKey() === null ? null : $address->public_id] + $address->only([
                 'recipient', 'line1', 'line2', 'city', 'region', 'postal_code', 'country', 'phone',
             ]),
             'conflicts' => $conflicts,

@@ -36,11 +36,12 @@ class TokenController extends Controller
         if (! $user->staffIdentity()->exists() && ! $user->hasVerifiedEmail()) {
             abort_if($user->isSuspended(), 423);
             Gate::forUser($user)->authorize('customer-account');
-            $verificationCodes->send($user);
+            $verificationToken = $verificationCodes->issue($user, CustomerEmailVerificationCodes::PURPOSE_LOGIN);
 
             return $this->apiSuccess($request, [
                 'email_verification_required' => true,
                 'email' => $user->email,
+                'verification_token' => $verificationToken,
             ], 'A verification code has been sent to your email address.', 202)->header('Cache-Control', 'no-store');
         }
 

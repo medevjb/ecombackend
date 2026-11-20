@@ -247,7 +247,7 @@ paths:
                                     - $ref: '#/components/schemas/Success'
                                     - properties:
                                           data:
-                                              $ref: '#/components/schemas/User'
+                                              $ref: '#/components/schemas/RegistrationChallenge'
                 '400':
                     $ref: '#/components/responses/Error'
                 '422':
@@ -273,7 +273,11 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Success'
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/VerificationChallenge'
                 '400':
                     $ref: '#/components/responses/Error'
                 '422':
@@ -298,6 +302,34 @@ paths:
                             $ref: '#/components/headers/RequestId'
                 '400':
                     $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/forgot-password/verify-code:
+        post:
+            operationId: verifyCustomerPasswordResetCode
+            summary: Verify a password-reset code and issue a short-lived reset token
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/VerifyCustomerCode'
+            responses:
+                '200':
+                    description: Code verified and reset token issued. The token is stored hashed and expires after 15 minutes.
+                    headers:
+                        X-Request-Id:
+                            $ref: '#/components/headers/RequestId'
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/PasswordResetGrant'
                 '422':
                     $ref: '#/components/responses/Error'
                 '429':
@@ -355,13 +387,19 @@ paths:
     /api/v1/auth/email/resend-verification:
         post:
             operationId: resendCustomerVerificationCode
-            summary: Request a new customer email verification code
+            summary: Request a new customer email verification code using its challenge token
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/AccountEmail'
+                            type: object
+                            required: [verification_token]
+                            properties:
+                                verification_token:
+                                    type: string
+                                    minLength: 64
+                                    maxLength: 64
             responses:
                 '202':
                     description: Returns the same response whether or not an unverified account exists.
@@ -383,18 +421,18 @@ paths:
                     application/json:
                         schema:
                             type: object
-                            required: [email, code]
+                            required: [verification_token, code]
                             properties:
-                                email:
+                                verification_token:
                                     type: string
-                                    format: email
-                                    maxLength: 255
+                                    minLength: 64
+                                    maxLength: 64
                                 code:
                                     type: string
                                     pattern: '^[0-9]{6}$'
             responses:
                 '200':
-                    description: Email address verified.
+                    description: Email address verified and storefront access token issued.
                     content:
                         application/json:
                             schema:
@@ -402,7 +440,7 @@ paths:
                                     - $ref: '#/components/schemas/Success'
                                     - properties:
                                           data:
-                                              $ref: '#/components/schemas/User'
+                                              $ref: '#/components/schemas/AccessGrant'
                 '422':
                     $ref: '#/components/responses/Error'
                 '429':
@@ -3781,13 +3819,30 @@ paths:
                       maxLength: 100
                 - name: category
                   in: query
+                  description: Legacy single-category filter.
                   schema:
                       type: string
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: style
                   in: query
-                  description: Filter by a published category under Dress Styles.
+                  description: Legacy single dress-style filter.
                   schema:
                       type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: brand
                   in: query
                   schema:
@@ -3936,13 +3991,30 @@ paths:
                       maxLength: 100
                 - name: category
                   in: query
+                  description: Legacy single-category filter.
                   schema:
                       type: string
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: style
                   in: query
-                  description: Filter by a published category under Dress Styles.
+                  description: Legacy single dress-style filter.
                   schema:
                       type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: brand
                   in: query
                   schema:
@@ -4033,13 +4105,30 @@ paths:
                       maxLength: 100
                 - name: category
                   in: query
+                  description: Legacy single-category filter.
                   schema:
                       type: string
+                - name: categories[]
+                  in: query
+                  description: Match products in any selected clothing category.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: style
                   in: query
-                  description: Filter by a published category under Dress Styles.
+                  description: Legacy single dress-style filter.
                   schema:
                       type: string
+                - name: styles[]
+                  in: query
+                  description: Match products in any selected dress style.
+                  schema:
+                      type: array
+                      maxItems: 25
+                      items:
+                          type: string
                 - name: brand
                   in: query
                   schema:
@@ -8811,6 +8900,50 @@ components:
                     type: string
                     format: email
                     maxLength: 255
+        VerificationChallenge:
+            type: object
+            required: [email, verification_token]
+            properties:
+                email:
+                    type: string
+                    format: email
+                verification_token:
+                    type: string
+                    minLength: 64
+                    maxLength: 64
+                    description: Random, single-purpose challenge credential. Keep it client-side until code verification.
+        RegistrationChallenge:
+            allOf:
+                - $ref: '#/components/schemas/VerificationChallenge'
+                - type: object
+                  required: [email_verification_required, user]
+                  properties:
+                      email_verification_required:
+                          type: boolean
+                          const: true
+                      user:
+                          $ref: '#/components/schemas/User'
+        VerifyCustomerCode:
+            type: object
+            required: [verification_token, code]
+            properties:
+                verification_token:
+                    type: string
+                    minLength: 64
+                    maxLength: 64
+                code:
+                    type: string
+                    pattern: '^[0-9]{6}$'
+        PasswordResetGrant:
+            type: object
+            required: [email, reset_token]
+            properties:
+                email:
+                    type: string
+                    format: email
+                reset_token:
+                    type: string
+                    description: Single-use password reset token; expires after 15 minutes.
         AccountPassword:
             type: object
             required: [password, password_confirmation]
@@ -10355,8 +10488,23 @@ components:
                 address_id:
                     type: string
                     pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
-            required:
-                - address_id
+                address:
+                    type: object
+                    description: One-time shipping address. Stored only on the order.
+                    additionalProperties: false
+                    required: [recipient, line1, city, postal_code, country]
+                    properties:
+                        recipient: { type: string, maxLength: 150 }
+                        line1: { type: string, maxLength: 200 }
+                        line2: { type: [string, 'null'], maxLength: 200 }
+                        city: { type: string, maxLength: 100 }
+                        region: { type: [string, 'null'], maxLength: 100 }
+                        postal_code: { type: string, maxLength: 32 }
+                        country: { type: string, pattern: '^[a-zA-Z]{2}$' }
+                        phone: { type: [string, 'null'], maxLength: 35 }
+            oneOf:
+                - required: [address_id]
+                - required: [address]
         CheckoutQuote:
             type: object
             properties:
@@ -10391,8 +10539,9 @@ components:
                     type: object
                     properties:
                         id:
-                            type: string
+                            type: [string, 'null']
                             pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                            description: Null for a one-time shipping address.
                         recipient:
                             type:
                                 - string
@@ -10775,51 +10924,3 @@ components:
                 - type
                 - livemode
                 - data
-                - name: categories[]
-                  in: query
-                  description: Match products in any selected clothing category.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string
-                - name: styles[]
-                  in: query
-                  description: Match products in any selected dress style.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string
-                - name: categories[]
-                  in: query
-                  description: Match products in any selected clothing category.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string
-                - name: styles[]
-                  in: query
-                  description: Match products in any selected dress style.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string
-                - name: categories[]
-                  in: query
-                  description: Match products in any selected clothing category.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string
-                - name: styles[]
-                  in: query
-                  description: Match products in any selected dress style.
-                  schema:
-                      type: array
-                      maxItems: 25
-                      items:
-                          type: string

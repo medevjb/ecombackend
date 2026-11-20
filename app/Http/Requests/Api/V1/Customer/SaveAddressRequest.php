@@ -16,7 +16,13 @@ class SaveAddressRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        $prefix = $this->isMethod('POST') ? [] : ['sometimes'];
+        return self::shippingRules(partial: ! $this->isMethod('POST')) + ['is_default' => ['sometimes', 'required', 'boolean']];
+    }
+
+    /** @return array<string, list<string>> */
+    public static function shippingRules(bool $partial = false): array
+    {
+        $prefix = $partial ? ['sometimes'] : [];
 
         return [
             'recipient' => [...$prefix, 'required', 'string', 'max:150'],
@@ -27,7 +33,6 @@ class SaveAddressRequest extends FormRequest
             'postal_code' => [...$prefix, 'required', 'string', 'max:32'],
             'country' => [...$prefix, 'required', 'string', 'regex:/\A[A-Z]{2}\z/'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:35', 'regex:/\A\+?[0-9][0-9 ().-]+\z/'],
-            'is_default' => ['sometimes', 'required', 'boolean'],
         ];
     }
 }

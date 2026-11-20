@@ -56,12 +56,15 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('coupon-apply', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('customer-recovery', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('customer-email-verification', function (Request $request): array {
+            $challenge = $request->input('verification_token');
             $email = $request->input('email');
-            $identity = is_string($email) ? Str::lower(substr($email, 0, 255)) : '';
+            $identity = is_string($challenge)
+                ? 'challenge:'.hash('sha256', $challenge)
+                : 'email:'.hash('sha256', is_string($email) ? Str::lower(substr($email, 0, 255)) : '');
 
             return [
                 Limit::perMinute(10)->by('ip:'.$request->ip()),
-                Limit::perMinutes(10, 3)->by('email:'.hash('sha256', $identity)),
+                Limit::perMinutes(10, 3)->by($identity),
             ];
         });
 

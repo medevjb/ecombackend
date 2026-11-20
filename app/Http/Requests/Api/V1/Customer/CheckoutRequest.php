@@ -8,6 +8,12 @@ class CheckoutRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        $address = $this->input('address');
+        if (is_array($address) && is_string($address['country'] ?? null)) {
+            $address['country'] = strtoupper($address['country']);
+            $this->merge(['address' => $address]);
+        }
+
         if ($this->routeIs('api.v1.customer.checkout.store')) {
             $this->merge(['idempotency_key' => $this->header('Idempotency-Key')]);
         }
@@ -16,11 +22,13 @@ class CheckoutRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return [
+        $shippingRules = SaveAddressRequest::shippingRules();
+        $rules = [
             'idempotency_key' => $this->routeIs('api.v1.customer.checkout.store')
                 ? ['required', 'string', 'max:128', 'regex:/\A[A-Za-z0-9._:-]+\z/']
                 : ['prohibited'],
-            'address_id' => ['required', 'ulid'],
+            'address_id' => ['required_without:address', 'prohibits:address', 'ulid'],
+            'address' => ['required_without:address_id', 'prohibits:address_id', 'array:'.implode(',', array_keys($shippingRules))],
             'subtotal_amount' => ['prohibited'],
             'discount_amount' => ['prohibited'],
             'shipping_amount' => ['prohibited'],
@@ -30,5 +38,19 @@ class CheckoutRequest extends FormRequest
             'order_status' => ['prohibited'],
             'payment_status' => ['prohibited'],
         ];
+
+        if ($this->has('address')) {
+            foreach ($shippingRules as $field => $rule) {
+                $rules['address.'.$field] = $rule;
+            }
+        }
+
+        return $rules;
+    }
+
+    /** @return string|array<string, mixed> */
+    public function shippingAddress(): string|array
+    {
+        return $this->validated('address') ?? $this->validated('address_id');
     }
 }

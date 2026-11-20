@@ -13,7 +13,9 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
         ->middleware('throttle:customer-email-verification')->name('verification.resend');
     Route::post('email/verify-code', [CustomerVerificationController::class, 'verifyCode'])
         ->middleware('throttle:customer-email-verification')->name('verification.verify-code');
-    Route::post('forgot-password', [PasswordController::class, 'forgot'])->middleware('throttle:customer-recovery')->name('password.forgot');
+    Route::post('forgot-password', [PasswordController::class, 'forgot'])->middleware('throttle:customer-email-verification')->name('password.forgot');
+    Route::post('forgot-password/verify-code', [PasswordController::class, 'verifyCode'])
+        ->middleware('throttle:customer-email-verification')->name('password.verify-code');
     Route::post('reset-password', [PasswordController::class, 'reset'])->middleware('throttle:customer-recovery')->name('password.reset');
     Route::get('email/verify/{id}/{hash}', [CustomerVerificationController::class, 'verify'])
         ->middleware(['signed:relative', 'throttle:customer-recovery'])->name('verification.verify');

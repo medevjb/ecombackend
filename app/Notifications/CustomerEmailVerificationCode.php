@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 
 class CustomerEmailVerificationCode extends Notification
 {
-    public function __construct(public readonly string $code) {}
+    public function __construct(public readonly string $code, public readonly string $purpose) {}
 
     /**
      * Get the notification's delivery channels.
@@ -24,10 +24,12 @@ class CustomerEmailVerificationCode extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $reset = $this->purpose === 'password_reset';
+
         return (new MailMessage)
-            ->subject('Your SHOP.CO verification code')
-            ->greeting('Verify your email address')
-            ->line('Enter this one-time code to verify your SHOP.CO account:')
+            ->subject($reset ? 'Your SHOP.CO password reset code' : 'Your SHOP.CO verification code')
+            ->greeting($reset ? 'Reset your password' : 'Verify your email address')
+            ->line($reset ? 'Enter this one-time code to continue resetting your SHOP.CO password:' : 'Enter this one-time code to verify your SHOP.CO account:')
             ->line('**'.$this->code.'**')
             ->line('This code expires in 10 minutes and can only be used once.')
             ->line('If you did not create a SHOP.CO account, you can ignore this email.');
