@@ -11,8 +11,6 @@
 /storage/*.key
 /storage/pail
 /vendor
-.env
-.env.*
 !.env.example
 .phpactor.json
 .phpunit.result.cache
@@ -24,7 +22,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
 /.zed
 /.agents
 /.amp
@@ -42,3 +39,4 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+config.bat

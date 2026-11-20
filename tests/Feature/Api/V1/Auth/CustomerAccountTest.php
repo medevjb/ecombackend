@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use App\Notifications\CustomerEmailVerificationCode;
-use App\Notifications\QueuedPasswordReset;
 use HasinHayder\Tyro\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -19,21 +18,21 @@ it('registers only a customer and supports shared login and profile updates', fu
         'roles' => ['super-admin'],
     ])->assertCreated()
         ->assertJsonPath('data.email', 'customer@example.test')
-        ->assertJsonPath('data.roles', ['customer'])
-        ->assertJsonPath('data.email_verified', false)
-        ->assertJsonMissingPath('data.password');
+        ->assertJsonPath('data.user.roles', ['customer'])
+        ->assertJsonPath('data.user.email_verified', false)
+        ->assertJsonMissingPath('data.user.password');
 
-    expect($registration->json('data.id'))->toMatch('/^[0-9a-hjkmnp-tv-z]{26}$/');
+    expect($registration->json('data.user.id'))->toMatch('/^[0-9a-hjkmnp-tv-z]{26}$/');
 
     $credentials = ['email' => 'CUSTOMER@EXAMPLE.TEST', 'password' => 'SecurePass!234'];
-    $this->postJson('/api/v1/auth/login', $credentials)->assertAccepted()
+    $challenge = $this->postJson('/api/v1/auth/login', $credentials)->assertAccepted()
         ->assertJsonPath('data.email_verification_required', true)->assertJsonMissingPath('data.access_token');
 
-    $customer = User::query()->where('public_id', $registration->json('data.id'))->firstOrFail();
+    $customer = User::query()->where('public_id', $registration->json('data.user.id'))->firstOrFail();
     $code = Notification::sent($customer, CustomerEmailVerificationCode::class)->last()->code;
-    $verify = ['email' => $customer->email, 'code' => $code];
+    $verify = ['verification_token' => $challenge->json('data.verification_token'), 'code' => $code];
     $this->postJson('/api/v1/auth/email/verify-code', $verify)
-        ->assertOk()->assertJsonPath('data.email_verified', true);
+        ->assertOk()->assertJsonPath('data.user.email_verified', true)->assertJsonStructure(['data' => ['access_token']]);
     $this->postJson('/api/v1/auth/email/verify-code', $verify)
         ->assertUnprocessable()->assertJsonValidationErrors('code', 'errors.fields');
 
@@ -45,7 +44,7 @@ it('registers only a customer and supports shared login and profile updates', fu
         'name' => 'Updated Customer',
     ])->assertOk()->assertJsonPath('data.name', 'Updated Customer');
 
-    $this->assertDatabaseHas('users', ['public_id' => $registration->json('data.id'), 'name' => 'Updated Customer']);
+    $this->assertDatabaseHas('users', ['public_id' => $registration->json('data.user.id'), 'name' => 'Updated Customer']);
 });
 
 it('rejects weak passwords and case-insensitive duplicates with 422', function () {
@@ -68,8 +67,16 @@ it('keeps recovery responses uniform and uses a reset token only once', function
     $unknown = $this->postJson('/api/v1/auth/forgot-password', ['email' => 'unknown@example.test'])->assertAccepted();
     expect($existing->json('message'))->toBe($unknown->json('message'));
 
-    Notification::assertSentTo($user, QueuedPasswordReset::class);
-    $token = Notification::sent($user, QueuedPasswordReset::class)->sole()->token;
+    expect($existing->json('data.verification_token'))->toHaveLength(64)
+        ->and($unknown->json('data.verification_token'))->toHaveLength(64);
+
+    $notification = Notification::sent($user, CustomerEmailVerificationCode::class)->sole();
+    expect($notification->purpose)->toBe('password_reset');
+    $challenge = ['verification_token' => $existing->json('data.verification_token'), 'code' => $notification->code];
+    $token = $this->postJson('/api/v1/auth/forgot-password/verify-code', $challenge)
+        ->assertOk()->assertJsonPath('data.email', $user->email)->json('data.reset_token');
+    $this->postJson('/api/v1/auth/forgot-password/verify-code', $challenge)
+        ->assertUnprocessable()->assertJsonValidationErrors('code', 'errors.fields');
 
     $input = [
         'email' => $user->email,
@@ -131,9 +138,13 @@ it('rejects expired password reset tokens', function () {
     Notification::fake();
     $user = User::factory()->create();
 
-    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertAccepted();
-    $token = Notification::sent($user, QueuedPasswordReset::class)->sole()->token;
-    $this->travel(61)->minutes();
+    $challenge = $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertAccepted();
+    $notification = Notification::sent($user, CustomerEmailVerificationCode::class)->sole();
+    $token = $this->postJson('/api/v1/auth/forgot-password/verify-code', [
+        'verification_token' => $challenge->json('data.verification_token'),
+        'code' => $notification->code,
+    ])->assertOk()->json('data.reset_token');
+    $this->travel(16)->minutes();
     $this->postJson('/api/v1/auth/reset-password', [
         'email' => $user->email,
         'token' => $token,
