@@ -31,6 +31,10 @@ class TokenController extends Controller
         /** @var User $user */
         $user = $guard->user();
 
+        if (! $user->staffIdentity()->exists() && ! $user->hasVerifiedEmail()) {
+            return $this->apiFailure($request, 'EMAIL_NOT_VERIFIED', 'Verify your email address before signing in.', 403);
+        }
+
         $result = $twoFactor->login($user, $request->validated('device_name', 'api-client'), $request);
 
         if (isset($result['two_factor_required'])) {

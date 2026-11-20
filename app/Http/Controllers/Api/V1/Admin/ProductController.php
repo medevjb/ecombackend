@@ -33,7 +33,10 @@ class ProductController extends Controller
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'trashed' => ['sometimes', 'boolean'],
         ]);
-        $query = Product::query()->with(['brand', 'categories']);
+        $query = Product::query()->with([
+            'brand', 'categories',
+            'images' => fn ($images) => $images->orderByDesc('is_primary')->orderBy('sort_order')->orderBy('id')->limit(1),
+        ]);
         if ($request->boolean('trashed')) {
             $query->onlyTrashed();
         }

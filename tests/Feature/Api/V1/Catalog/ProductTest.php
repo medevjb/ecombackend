@@ -117,9 +117,10 @@ it('combines storefront price, category, brand and stock filters', function () {
     $other->categories()->attach($child);
     ProductVariant::factory()->for($other)->create();
 
-    $this->getJson('/api/v1/products?search=linen&category=clothing&brand=example&max_price=3000&in_stock=1')
+    $this->getJson('/api/v1/products?search=linen&category=clothing&brand=example&min_price=2700&max_price=2700&in_stock=1')
         ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $one->public_id)
         ->assertJsonPath('data.0.in_stock', true);
+    $this->getJson('/api/v1/products?search=linen&max_price=2699')->assertOk()->assertJsonCount(0, 'data');
     $this->getJson('/api/v1/products?in_stock=0')->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $other->public_id);
 
     $root->forceFill(['status' => CatalogStatus::Inactive])->save();

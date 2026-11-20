@@ -71,12 +71,22 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        VerifyEmail::createUrlUsing(fn (User $user): string => rtrim((string) config('app.url'), '/').URL::temporarySignedRoute(
-            'api.v1.auth.verification.verify',
-            now()->addMinutes(60),
-            ['id' => $user->public_id, 'hash' => sha1($user->getEmailForVerification())],
-            absolute: false,
-        ));
+        VerifyEmail::createUrlUsing(function (User $user): string {
+            $signedUrl = URL::temporarySignedRoute(
+                'api.v1.auth.verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->public_id, 'hash' => sha1($user->getEmailForVerification())],
+                absolute: false,
+            );
+            parse_str((string) parse_url($signedUrl, PHP_URL_QUERY), $signature);
+
+            return rtrim((string) config('auth.storefront_url'), '/').'/verify-email?'.http_build_query([
+                'id' => $user->public_id,
+                'hash' => sha1($user->getEmailForVerification()),
+                'expires' => $signature['expires'] ?? '',
+                'signature' => $signature['signature'] ?? '',
+            ], encoding_type: PHP_QUERY_RFC3986);
+        });
 
         Sanctum::authenticateAccessTokensUsing(function (PersonalAccessToken $token, bool $isValid): bool {
             if (! $isValid) {

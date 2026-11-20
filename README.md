@@ -2,9 +2,19 @@
 
 Laravel 13, PHP 8.4, MySQL 8, Sanctum and Tyro. The backend contract and delivery order are defined in the [PRD](docs/backend_prd.md).
 
+## Architecture
+
+The [Next.js frontend](https://github.com/medevjb/ecommerce) serves the storefront, customer account, and staff console. It calls this application's versioned JSON API under `/api/v1`.
+
+- `routes/api/v1` separates public storefront, customer, staff, authentication, and webhook routes.
+- `app/Http` validates requests and serializes responses. `app/Services` owns catalog discovery, pricing, inventory reservations, checkout, order lifecycle, and staff permissions.
+- MySQL stores the catalog, carts, inventory, orders, customer records, and audit history. Uploaded media uses the configured filesystem disk.
+- Customer and staff tokens use separate Sanctum guards. Laravel gates enforce staff permissions from `config/staff-access.php` and assigned roles. Customer endpoints also validate record ownership.
+- Queue workers deliver mail and process asynchronous work. The scheduler runs reservation expiry and maintenance jobs.
+
 ## Local development with MySQL
 
-For a fresh checkout, install dependencies with `composer install` and copy `.env.example` to `.env`. Set your local database credentials in `.env`, then run:
+For a fresh checkout, install dependencies with `composer install` and copy `.env.example` to `.env`. Create an empty MySQL database, configure its credentials in `.env`, and set `APP_URL=http://localhost:8000`. When using one Next.js instance on port 3000, set both `STOREFRONT_ORIGIN` and `ADMIN_ORIGIN` to `http://localhost:3000`. Run the following commands.
 
 ```sh
 php artisan key:generate --no-interaction
@@ -14,6 +24,8 @@ php artisan serve --no-interaction
 ```
 
 For a fresh checkout with a prepared database and local `.env`, `composer setup` installs dependencies, generates the application key, migrates, and builds the assets. Run `php artisan db:seed --no-interaction` for local demo data.
+
+Local seeding adds catalog data and demo users, including `customer@demo.test` and `admin@admin.com`. Both seeded accounts use `password` in local development only.
 
 Run `php artisan queue:work --no-interaction` and `php artisan schedule:work --no-interaction` in separate terminals. The default mail transport logs messages. To use a local Mailpit instance, set `MAIL_MAILER=smtp`, `MAIL_HOST=127.0.0.1`, and `MAIL_PORT=1025`.
 

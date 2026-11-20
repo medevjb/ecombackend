@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 
 class CustomerVerificationController extends Controller
 {
@@ -24,6 +25,21 @@ class CustomerVerificationController extends Controller
         }
 
         return $this->apiSuccess($request, null, 'Email verification request accepted.', 202);
+    }
+
+    public function resend(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+        $email = Str::lower($validated['email']);
+        $user = User::query()->customers()->whereNull('suspended_at')->where('email', $email)->first();
+
+        if ($user !== null && ! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        return $this->apiSuccess($request, null, 'If an unverified customer account exists for that email, a verification link will be sent.', 202);
     }
 
     public function verify(string $id, string $hash): Response

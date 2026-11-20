@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "E-commerce backend API",
-    "description": "Local API documentation through Phase 11. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
+    "description": "Local API documentation through Phase 12. Import the paired environment and enter account credentials locally. All routes use one login endpoint. Use the staff 2FA challenge request when login returns HTTP 202.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -2002,6 +2002,11 @@
                   "value": "",
                   "disabled": true,
                   "description": ""
+                },
+                {
+                  "key": "style",
+                  "value": "casual",
+                  "disabled": true
                 }
               ]
             },
@@ -2151,6 +2156,11 @@
                   "value": "",
                   "disabled": true,
                   "description": ""
+                },
+                {
+                  "key": "style",
+                  "value": "casual",
+                  "disabled": true
                 }
               ]
             },
@@ -2241,6 +2251,11 @@
                   "value": "",
                   "disabled": true,
                   "description": ""
+                },
+                {
+                  "key": "style",
+                  "value": "casual",
+                  "disabled": true
                 }
               ]
             },
@@ -8861,6 +8876,58 @@
                   "language": "json"
                 }
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin media",
+      "item": [
+        {
+          "name": "Upload an image for a catalog or storefront record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Upload an image for a catalog or storefront record",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/media/{{media_scope}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "media",
+                "{{media_scope}}"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           }
         }

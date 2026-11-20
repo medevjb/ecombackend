@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\CouponController;
 use App\Http\Controllers\Api\V1\Admin\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\InventoryController;
+use App\Http\Controllers\Api\V1\Admin\MediaUploadController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
@@ -190,3 +191,7 @@ Route::prefix('admin/reviews')->name('admin.reviews.')->middleware(['auth:staff'
     Route::post('bulk-actions', [ReviewController::class, 'bulk'])->name('bulk');
     Route::post('{review}/moderate', [ReviewController::class, 'moderate'])->name('moderate');
 });
+
+Route::post('admin/media/{scope}', [MediaUploadController::class, 'store'])
+    ->whereIn('scope', ['category-create', 'category-update', 'brand-create', 'brand-update', 'content'])
+    ->middleware(['auth:staff', 'throttle:30,1'])->name('admin.media.store');

@@ -11,6 +11,7 @@ use App\Services\Catalog\ProductDiscovery;
 use App\Services\Promotions\CouponService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class CartPricing
 {
@@ -23,7 +24,7 @@ class CartPricing
     {
         $visibleCategories = $this->discovery->visibleCategoryIds();
 
-        return ProductVariant::query()->eligible()->with(['product', 'inventory'])
+        return ProductVariant::query()->eligible()->with(['product.images' => fn ($images) => $images->orderByDesc('is_primary')->orderBy('sort_order')->orderBy('id'), 'inventory'])
             ->whereHas('product', fn (Builder $product) => $product->where('status', ProductStatus::Active)
                 ->whereHas('categories', fn (Builder $category) => $category->whereIntegerInRaw('categories.id', $visibleCategories)));
     }
@@ -67,12 +68,15 @@ class CartPricing
             if ($conflict !== null) {
                 $conflicts[] = ['item_id' => $item->public_id, 'code' => $conflict];
             }
+            $photo = $product?->images->first();
             $lines[] = [
                 'id' => $item->public_id,
                 'variant_id' => $item->variant->public_id,
                 'sku' => $item->variant->sku,
                 'product_id' => $product?->public_id,
                 'name' => $product?->name,
+                'slug' => $product?->slug,
+                'image_url' => $photo === null ? null : Storage::disk($photo->disk)->url($photo->path),
                 'quantity' => $item->quantity,
                 'unit_amount' => $unit,
                 'line_amount' => $lineAmount,

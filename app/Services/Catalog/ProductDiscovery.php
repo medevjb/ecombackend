@@ -52,15 +52,21 @@ class ProductDiscovery
                 ->whereRaw("products.name LIKE ? ESCAPE '!'", [$search])
                 ->orWhereRaw("products.short_description LIKE ? ESCAPE '!'", [$search]));
         }
+        if (isset($filters['style'])) {
+            $styles = $this->tree->findVisible($tree, 'dress-styles');
+            $style = $styles === null ? null : $this->tree->findVisible($styles->getRelation('children'), $filters['style']);
+            $styleIds = $this->categoryIds(new Collection($style === null ? [] : [$style]));
+            $query->whereHas('categories', fn (Builder $category) => $category->whereIntegerInRaw('categories.id', $styleIds));
+        }
         if (isset($filters['brand'])) {
             $query->whereHas('brand', fn (Builder $brand) => $brand
                 ->where('slug', $filters['brand'])->where('status', CatalogStatus::Active));
         }
         if (isset($filters['min_price'])) {
-            $query->whereRaw('COALESCE(products.sale_amount, products.regular_amount) >= ?', [$filters['min_price']]);
+            $query->whereRaw('COALESCE(products.sale_amount, products.regular_amount) >= ?', [(int) $filters['min_price']]);
         }
         if (isset($filters['max_price'])) {
-            $query->whereRaw('COALESCE(products.sale_amount, products.regular_amount) <= ?', [$filters['max_price']]);
+            $query->whereRaw('COALESCE(products.sale_amount, products.regular_amount) <= ?', [(int) $filters['max_price']]);
         }
         if (isset($filters['attribute_value_ids']) && count($filters['attribute_value_ids']) !== array_sum(array_map('count', $options))) {
             $query->whereRaw('1 = 0');

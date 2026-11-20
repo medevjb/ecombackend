@@ -21,6 +21,7 @@ class ProductController extends Controller
             'search' => ['sometimes', 'required', 'string', 'max:100'],
             'category' => ['sometimes', 'required', 'string', 'max:255'],
             'brand' => ['sometimes', 'required', 'string', 'max:255'],
+            'style' => ['sometimes', 'required', 'string', 'max:255'],
             'attribute_value_ids' => ['sometimes', 'array', 'list', 'max:25'],
             'attribute_value_ids.*' => ['required', 'ulid', 'distinct:ignore_case'],
             'min_price' => ['sometimes', 'integer', 'min:0', 'max:9007199254740991'],

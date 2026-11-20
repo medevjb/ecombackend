@@ -1,0 +1,158 @@
+[
+  {
+    "slug": "t-shirt-with-tape-details",
+    "name": "T-shirt with Tape Details",
+    "description": "Crafted with ultra-soft breathable combed cotton and minimalist contrast tape detailing. An effortless staple for everyday modern streetwear.",
+    "regular_amount": 12000,
+    "sale_amount": null,
+    "category": "t-shirts",
+    "images": [
+      "shirt.png"
+    ]
+  },
+  {
+    "slug": "skinny-fit-jeans",
+    "name": "Skinny Fit Jeans",
+    "description": "Engineered with premium stretch-denim for unmatched comfort and silhouette retention. Classic 5-pocket styling with authentic indigo wash.",
+    "regular_amount": 26000,
+    "sale_amount": 24000,
+    "category": "jeans",
+    "images": [
+      "pent.png"
+    ]
+  },
+  {
+    "slug": "checkered-shirt",
+    "name": "Checkered Shirt",
+    "description": "Timeless yarn-dyed cotton flannel featuring rich burgundy and navy check pattern. Features a button-down collar and tailored slim-regular cut.",
+    "regular_amount": 18000,
+    "sale_amount": null,
+    "category": "shirts",
+    "images": [
+      "shirt-full.png"
+    ]
+  },
+  {
+    "slug": "sleeve-striped-t-shirt",
+    "name": "Sleeve Striped T-shirt",
+    "description": "Athletic raglan-inspired tee crafted from lightweight breathable jersey. Vibrant sunset orange core accented with contrast striped sleeves.",
+    "regular_amount": 16000,
+    "sale_amount": 13000,
+    "category": "t-shirts",
+    "images": [
+      "jersey.png"
+    ]
+  },
+  {
+    "slug": "vertical-striped-shirt",
+    "name": "Vertical Striped Shirt",
+    "description": "Lightweight poplin cotton shirt with olive vertical pinstripes. Relaxed resort collar designed for casual warm-weather dressing.",
+    "regular_amount": 23200,
+    "sale_amount": 21200,
+    "category": "shirts",
+    "images": [
+      "shirtfull2.png"
+    ]
+  },
+  {
+    "slug": "courage-graphic-t-shirt",
+    "name": "Courage Graphic T-shirt",
+    "description": "Heavyweight vintage wash graphic t-shirt featuring high-density gradient typography. Drop shoulder relaxed streetwear fit.",
+    "regular_amount": 14500,
+    "sale_amount": null,
+    "category": "t-shirts",
+    "images": [
+      "tshirt2.png"
+    ]
+  },
+  {
+    "slug": "loose-fit-bermuda-shorts",
+    "name": "Loose Fit Bermuda Shorts",
+    "description": "Relaxed vintage blue denim shorts with washed fading and raw hem detail. Built for everyday summer recreation.",
+    "regular_amount": 8000,
+    "sale_amount": null,
+    "category": "shorts",
+    "images": [
+      "shortpent.png"
+    ]
+  },
+  {
+    "slug": "faded-skinny-jeans",
+    "name": "Faded Skinny Jeans",
+    "description": "Charcoal-washed premium stretch denim with whiskered thighs and clean finish. Sleek contouring fit with comfort flex waistband.",
+    "regular_amount": 21000,
+    "sale_amount": null,
+    "category": "jeans",
+    "images": [
+      "pent2.png"
+    ]
+  },
+  {
+    "slug": "one-life-graphic-t-shirt",
+    "name": "ONE LIFE GRAPHIC T-SHIRT",
+    "description": "This graphic t-shirt which is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.",
+    "regular_amount": 30000,
+    "sale_amount": 26000,
+    "category": "t-shirts",
+    "images": [
+      "onelife-1.jpg",
+      "onelife-2.jpg",
+      "onelife-3.jpg"
+    ],
+    "colors": [
+      "Olive",
+      "Forest",
+      "Navy"
+    ],
+    "sizes": [
+      "Small",
+      "Medium",
+      "Large",
+      "X-Large"
+    ]
+  },
+  {
+    "slug": "polo-with-contrast-trims",
+    "name": "Polo with Contrast Trims",
+    "description": "Classic polo shirt with contrast collar and sleeve trims.",
+    "regular_amount": 24200,
+    "sale_amount": 21200,
+    "category": "t-shirts",
+    "images": [
+      "polo-contrast.jpg"
+    ]
+  },
+  {
+    "slug": "gradient-graphic-t-shirt",
+    "name": "Gradient Graphic T-shirt",
+    "description": "Vibrant gradient chest print on soft combed cotton.",
+    "regular_amount": 14500,
+    "sale_amount": null,
+    "category": "t-shirts",
+    "images": [
+      "gradient-tee.png"
+    ]
+  },
+  {
+    "slug": "polo-with-tipping-details",
+    "name": "Polo with Tipping Details",
+    "description": "Textured pique knit with micro tipping along the ribbed collar.",
+    "regular_amount": 18000,
+    "sale_amount": null,
+    "category": "t-shirts",
+    "images": [
+      "polo-tipping.png"
+    ]
+  },
+  {
+    "slug": "black-striped-t-shirt",
+    "name": "Black Striped T-shirt",
+    "description": "Athletic raglan jersey with vintage vertical pinstripes.",
+    "regular_amount": 15000,
+    "sale_amount": 12000,
+    "category": "t-shirts",
+    "images": [
+      "striped-tee.png"
+    ]
+  }
+]

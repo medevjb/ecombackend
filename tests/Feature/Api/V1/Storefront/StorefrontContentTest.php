@@ -19,7 +19,8 @@ it('serves ordered published content and current catalog data on the homepage', 
         ->assertJsonPath('data.hero_slides.0.key', 'first')
         ->assertJsonPath('data.hero_slides.1.key', 'second')
         ->assertJsonPath('data.sections.0.entries.0.id', $product->public_id)
-        ->assertJsonPath('data.sections.4.entries.0.title', 'Casual')
+        ->assertJsonPath('data.sections.3.key', 'dress-styles')
+        ->assertJsonPath('data.sections.3.entries.0.title', 'Casual')
         ->assertJsonMissingPath('data.hero_slides.0.published');
 });
 

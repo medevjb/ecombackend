@@ -45,6 +45,7 @@ class StorefrontContentRules
             ],
             'testimonial' => [
                 'author' => ['required', 'string', 'max:120'], 'quote' => ['required', 'string', 'max:2000'],
+                'rating' => ['sometimes', 'nullable', 'integer', 'between:1,5'],
                 'source' => ['required', Rule::in(['editorial', 'customer_submission'])], 'image_url' => $url, 'image_alt' => $text,
             ],
             'settings' => [

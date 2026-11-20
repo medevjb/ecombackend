@@ -21,6 +21,7 @@ class CustomerAccountController extends Controller
             $request->validated('email'),
             $request->validated('password'),
         );
+        $user->sendEmailVerificationNotification();
 
         return $this->apiSuccess($request, new UserResource($user), 'Customer account created.', 201);
     }
