@@ -7,15 +7,14 @@ use App\Models\User;
 use App\Services\Auth\StaffAccess;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
@@ -45,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
             return [
                 Limit::perMinute(30)->by('ip:'.$request->ip()),
                 Limit::perMinute(5)->by('account:'.$identity.'|'.$request->ip())
-                    ->after(fn (Response $response): bool => $response->getStatusCode() === 401),
+                    ->after(fn (Response $response): bool => in_array($response->getStatusCode(), [202, 401], true)),
             ];
         });
 
@@ -56,6 +55,15 @@ class AppServiceProvider extends ServiceProvider
         ]);
         RateLimiter::for('coupon-apply', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('customer-recovery', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('customer-email-verification', function (Request $request): array {
+            $email = $request->input('email');
+            $identity = is_string($email) ? Str::lower(substr($email, 0, 255)) : '';
+
+            return [
+                Limit::perMinute(10)->by('ip:'.$request->ip()),
+                Limit::perMinutes(10, 3)->by('email:'.hash('sha256', $identity)),
+            ];
+        });
 
         RateLimiter::for('staff-two-factor-manage', fn (Request $request): Limit => Limit::perMinute(15)->by($request->user()?->getAuthIdentifier() ?? $request->ip()));
         RateLimiter::for('staff-two-factor-challenge', fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
@@ -69,23 +77,6 @@ class AppServiceProvider extends ServiceProvider
                 ['token' => $token, 'email' => $user->email],
                 encoding_type: PHP_QUERY_RFC3986,
             );
-        });
-
-        VerifyEmail::createUrlUsing(function (User $user): string {
-            $signedUrl = URL::temporarySignedRoute(
-                'api.v1.auth.verification.verify',
-                now()->addMinutes(60),
-                ['id' => $user->public_id, 'hash' => sha1($user->getEmailForVerification())],
-                absolute: false,
-            );
-            parse_str((string) parse_url($signedUrl, PHP_URL_QUERY), $signature);
-
-            return rtrim((string) config('auth.storefront_url'), '/').'/verify-email?'.http_build_query([
-                'id' => $user->public_id,
-                'hash' => sha1($user->getEmailForVerification()),
-                'expires' => $signature['expires'] ?? '',
-                'signature' => $signature['signature'] ?? '',
-            ], encoding_type: PHP_QUERY_RFC3986);
         });
 
         Sanctum::authenticateAccessTokensUsing(function (PersonalAccessToken $token, bool $isValid): bool {

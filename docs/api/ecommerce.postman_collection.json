@@ -55,7 +55,7 @@
                 "value": "application/json"
               }
             ],
-            "description": "Issue a bearer token for an account of any role.\n\nDocumented HTTP responses: 200, 202, 400, 401, 422, 423, 429. A successful response stores the matching customer or staff token. A 202 response stores the challenge token for the staff 2FA request.",
+            "description": "Issue a bearer token for an account of any role. Documented HTTP responses: 200, 202, 400, 401, 422, 423, 429. A 202 can request staff 2FA or customer email-code verification.",
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
               "host": [
@@ -94,6 +94,8 @@
                   "    pm.environment.set(\"access_token\", data.access_token);",
                   "    pm.environment.set(data.dashboard + \"_access_token\", data.access_token);",
                   "    pm.environment.unset(\"challenge_token\");",
+                  "  } else if (data.email_verification_required) {",
+                  "    pm.environment.set(\"verification_email\", data.email);",
                   "  } else if (data.challenge_token) {",
                   "    pm.environment.set(\"challenge_token\", data.challenge_token);",
                   "  }",
@@ -205,7 +207,7 @@
                 "value": "application/json"
               }
             ],
-            "description": "Create a customer account.\n\nDocumented HTTP responses: 201, 400, 422, 429.",
+            "description": "Create a customer account and send a six-digit email verification code. Documented HTTP responses: 201, 400, 422, 429.",
             "url": {
               "raw": "{{base_url}}/api/v1/auth/register",
               "host": [
@@ -367,7 +369,7 @@
           }
         },
         {
-          "name": "Send a customer email verification link",
+          "name": "Send a customer email verification code",
           "request": {
             "method": "POST",
             "header": [
@@ -376,7 +378,7 @@
                 "value": "application/json"
               }
             ],
-            "description": "Send a customer email verification link.\n\nDocumented HTTP responses: 202, 401, 403, 429.",
+            "description": "Send a customer email verification code. Documented HTTP responses: 202, 401, 403, 429.",
             "url": {
               "raw": "{{base_url}}/api/v1/auth/email/verification-notification",
               "host": [
@@ -523,6 +525,92 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Updated Customer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Resend a customer verification code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Request a fresh verification code. The response is the same whether or not an unverified customer account exists. Documented HTTP responses: 202, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/email/resend-verification",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "email",
+                "resend-verification"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{account_email}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verify a customer email with a code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Verify a customer email address using the six-digit code sent during registration or login. Documented HTTP responses: 200, 422, 429.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/email/verify-code",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "email",
+                "verify-code"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{account_email}}\",\n  \"code\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -6783,6 +6871,93 @@
               }
             }
           }
+        },
+        {
+          "name": "List internal order notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Requires orders.view and orders.note.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{order_id}}",
+                "notes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add an internal order note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Requires orders.view and orders.note.",
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "orders",
+                "{{order_id}}",
+                "notes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{staff_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Customer requested a callback.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
       ]
     },
@@ -8715,6 +8890,42 @@
               ]
             }
           }
+        },
+        {
+          "name": "Read my product review",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Read my product review",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/product-reviews/{{slug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "product-reviews",
+                "{{slug}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -8926,6 +9137,154 @@
                   "key": "image",
                   "type": "file",
                   "src": []
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer wishlist",
+      "item": [
+        {
+          "name": "List saved products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "List saved products",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/wishlist",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "wishlist"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check whether a product is saved",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Check whether a product is saved",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/wishlist/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "wishlist",
+                "{{product_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Save a visible product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Save a visible product",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/wishlist/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "wishlist",
+                "{{product_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove a saved product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "description": "Remove a saved product",
+            "url": {
+              "raw": "{{base_url}}/api/v1/me/wishlist/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "wishlist",
+                "{{product_id}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customer_access_token}}",
+                  "type": "string"
                 }
               ]
             }

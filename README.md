@@ -7,7 +7,7 @@ Laravel 13, PHP 8.4, MySQL 8, Sanctum and Tyro. The backend contract and deliver
 The [Next.js frontend](https://github.com/medevjb/ecommerce) serves the storefront, customer account, and staff console. It calls this application's versioned JSON API under `/api/v1`.
 
 - `routes/api/v1` separates public storefront, customer, staff, authentication, and webhook routes.
-- `app/Http` validates requests and serializes responses. `app/Services` owns catalog discovery, pricing, inventory reservations, checkout, order lifecycle, and staff permissions.
+- `app/Http` validates requests and serializes responses. `app/Services` owns catalog discovery, pricing, inventory reservations, checkout, order lifecycle, and staff permissions. Wishlist data is scoped to the customer. Internal order notes are available only to staff with both `orders.view` and `orders.note`.
 - MySQL stores the catalog, carts, inventory, orders, customer records, and audit history. Uploaded media uses the configured filesystem disk.
 - Customer and staff tokens use separate Sanctum guards. Laravel gates enforce staff permissions from `config/staff-access.php` and assigned roles. Customer endpoints also validate record ownership.
 - Queue workers deliver mail and process asynchronous work. The scheduler runs reservation expiry and maintenance jobs.
@@ -48,7 +48,7 @@ The API defaults to port 8000 and the Mailpit web UI defaults to port 8025. The 
 - `GET /` displays service health and authentication endpoint examples.
 - `GET /api/v1/status` reports database connectivity and returns 503 when the connection is unavailable.
 - `GET /up` reports Laravel liveness.
-- `POST /api/v1/auth/login` accepts credentials for all roles and returns a bearer token and role slugs. Use the returned `data.dashboard` and `data.user.roles` to route the user to the appropriate client dashboard.
+- `POST /api/v1/auth/login` accepts credentials for all roles and returns a bearer token and role slugs. Use the returned `data.dashboard` and `data.user.roles` to route authenticated users. An unverified customer receives a verification challenge. Complete it through `POST /api/v1/auth/email/verify-code` before signing in.
 - Set `STOREFRONT_ORIGIN` and `ADMIN_ORIGIN` to the origins of your frontend applications. Include the scheme and port when needed, with no trailing slash.
 
 Run `vendor/bin/pest` for the automated tests.

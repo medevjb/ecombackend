@@ -28,6 +28,16 @@ class ReviewController extends Controller
         return $this->apiSuccess($request, ProductReviewResource::collection($items), 'Product reviews retrieved.', meta: $pagination->meta($items));
     }
 
+    public function mine(Request $request, string $slug, ProductDiscovery $products): JsonResponse
+    {
+        $product = $products->query()->where('products.slug', $slug)->firstOrFail();
+        $review = ProductReview::query()->where('product_id', $product->id)
+            ->where('user_id', $this->customer($request)->id)->first();
+
+        return $this->apiSuccess($request, $review === null ? null : new ProductReviewResource($review), 'Your review retrieved.')
+            ->header('Cache-Control', 'no-store');
+    }
+
     public function store(Request $request, string $slug, ProductDiscovery $products, ProductReviews $reviews): JsonResponse
     {
         $data = $request->validate($this->rules(true));

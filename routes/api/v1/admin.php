@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Admin\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\InventoryController;
 use App\Http\Controllers\Api\V1\Admin\MediaUploadController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
+use App\Http\Controllers\Api\V1\Admin\OrderNoteController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\ProductVariantController;
@@ -152,6 +153,8 @@ Route::prefix('admin/orders')->name('admin.orders.')->middleware('auth:staff')->
     Route::get('{order}', [OrderController::class, 'show'])->can('orders.view')->name('show');
     Route::post('{order}/transitions', [OrderController::class, 'transition'])->can('orders.update_status')->name('transitions.store');
     Route::post('{order}/cancel', [OrderController::class, 'cancel'])->can('orders.update_status')->name('cancel');
+    Route::get('{order}/notes', [OrderNoteController::class, 'index'])->can('orders.view')->can('orders.note')->name('notes.index');
+    Route::post('{order}/notes', [OrderNoteController::class, 'store'])->can('orders.view')->can('orders.note')->name('notes.store');
     Route::get('{order}/refunds', [OrderController::class, 'refunds'])->can('orders.refund')->name('refunds.index');
     Route::post('{order}/refunds', [OrderController::class, 'refund'])->can('orders.refund')->name('refunds.store');
 });

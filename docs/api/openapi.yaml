@@ -67,7 +67,7 @@ paths:
                                           data:
                                               $ref: '#/components/schemas/AccessGrant'
                 '202':
-                    description: Staff second-factor verification is required. No bearer token has been issued.
+                    description: Staff second-factor verification is required, or an unverified customer must submit the emailed code. No bearer token has been issued.
                     headers:
                         X-Request-Id:
                             $ref: '#/components/headers/RequestId'
@@ -78,7 +78,9 @@ paths:
                                     - $ref: '#/components/schemas/Success'
                                     - properties:
                                           data:
-                                              $ref: '#/components/schemas/TwoFactorChallenge'
+                                              oneOf:
+                                                  - $ref: '#/components/schemas/TwoFactorChallenge'
+                                                  - $ref: '#/components/schemas/EmailVerificationRequired'
                 '400':
                     $ref: '#/components/responses/Error'
                 '401':
@@ -234,7 +236,7 @@ paths:
                             $ref: '#/components/schemas/RegisterCustomer'
             responses:
                 '201':
-                    description: Create a customer account.
+                    description: Create a customer account and send a six-digit email verification code.
                     headers:
                         X-Request-Id:
                             $ref: '#/components/headers/RequestId'
@@ -331,12 +333,12 @@ paths:
     /api/v1/auth/email/verification-notification:
         post:
             operationId: sendCustomerVerification
-            summary: Send a customer email verification link
+            summary: Send a customer email verification code
             security:
                 - BearerAuth: []
             responses:
                 '202':
-                    description: Send a customer email verification link.
+                    description: Send a customer email verification code.
                     headers:
                         X-Request-Id:
                             $ref: '#/components/headers/RequestId'
@@ -347,6 +349,61 @@ paths:
                 '401':
                     $ref: '#/components/responses/Error'
                 '403':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/email/resend-verification:
+        post:
+            operationId: resendCustomerVerificationCode
+            summary: Request a new customer email verification code
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AccountEmail'
+            responses:
+                '202':
+                    description: Returns the same response whether or not an unverified account exists.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Success'
+                '422':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    /api/v1/auth/email/verify-code:
+        post:
+            operationId: verifyCustomerEmailCode
+            summary: Verify a customer email address with its six-digit code
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [email, code]
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    maxLength: 255
+                                code:
+                                    type: string
+                                    pattern: '^[0-9]{6}$'
+            responses:
+                '200':
+                    description: Email address verified.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/User'
+                '422':
                     $ref: '#/components/responses/Error'
                 '429':
                     $ref: '#/components/responses/Error'
@@ -7408,6 +7465,234 @@ paths:
                                     description: JPEG, PNG or WebP. Maximum 6 MB and 6000 pixels per side.
                             required:
                                 - image
+    '/api/v1/me/wishlist':
+        get:
+            operationId: listWishlist
+            summary: List the current customer’s saved products
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: page
+                  schema: { type: integer, minimum: 1 }
+                - in: query
+                  name: per_page
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+            responses:
+                '200':
+                    description: List the current customer’s saved products.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/Product'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+    '/api/v1/me/wishlist/{product}':
+        get:
+            operationId: getWishlistStatus
+            summary: Check whether a product is saved
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: product
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+            responses:
+                '200':
+                    description: Check whether a product is saved.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: object
+                                              required: [saved]
+                                              properties:
+                                                  saved: { type: boolean }
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+        put:
+            operationId: saveWishlistProduct
+            summary: Save a visible product to the current customer’s wishlist
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: product
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+            responses:
+                '204':
+                    description: Save a visible product to the current customer’s wishlist.
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+        delete:
+            operationId: removeWishlistProduct
+            summary: Remove a product from the current customer’s wishlist
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: product
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+            responses:
+                '204':
+                    description: Remove a product from the current customer’s wishlist.
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+    '/api/v1/me/product-reviews/{slug}':
+        get:
+            operationId: getMyProductReview
+            summary: Read the current customer’s review for this product
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: slug
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Read the current customer’s review for this product.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              anyOf:
+                                                  - $ref: '#/components/schemas/ProductReview'
+                                                  - type: 'null'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+                '429':
+                    $ref: '#/components/responses/Error'
+    '/api/v1/admin/orders/{order}/notes':
+        get:
+            operationId: listOrderNotes
+            summary: List private order notes with orders.view and orders.note
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: order
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+                - in: query
+                  name: page
+                  schema: { type: integer, minimum: 1 }
+                - in: query
+                  name: per_page
+                  schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+            responses:
+                '200':
+                    description: List private order notes with orders.view and orders.note.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              type: array
+                                              items:
+                                                  $ref: '#/components/schemas/OrderNote'
+                                          meta:
+                                              properties:
+                                                  pagination:
+                                                      $ref: '#/components/schemas/Pagination'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
+        post:
+            operationId: createOrderNote
+            summary: Add a private order note with orders.view and orders.note
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: order
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[0-9a-hjkmnp-tv-z]{26}$'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [body]
+                            properties:
+                                body: { type: string, minLength: 1, maxLength: 2000 }
+            responses:
+                '201':
+                    description: Add a private order note with orders.view and orders.note.
+                    content:
+                        application/json:
+                            schema:
+                                allOf:
+                                    - $ref: '#/components/schemas/Success'
+                                    - properties:
+                                          data:
+                                              $ref: '#/components/schemas/OrderNote'
+                '401':
+                    $ref: '#/components/responses/Error'
+                '403':
+                    $ref: '#/components/responses/Error'
+                '404':
+                    $ref: '#/components/responses/Error'
+                '422':
+                    $ref: '#/components/responses/Error'
 components:
     securitySchemes:
         BearerAuth:
@@ -8600,6 +8885,15 @@ components:
                 expires_at:
                     type: string
                     format: date-time
+        EmailVerificationRequired:
+            type: object
+            required: [email_verification_required, email]
+            properties:
+                email_verification_required:
+                    const: true
+                email:
+                    type: string
+                    format: email
         CompleteTwoFactorChallenge:
             type: object
             required: [challenge_token, code]
@@ -10162,6 +10456,14 @@ components:
                 - expires_at
                 - total_amount
                 - currency
+        OrderNote:
+            type: object
+            required: [id, author_name, body, created_at]
+            properties:
+                id: { type: string }
+                author_name: { type: string }
+                body: { type: string }
+                created_at: { type: string, format: date-time }
         Order:
             type: object
             properties:
@@ -10179,6 +10481,10 @@ components:
                         - shipped
                         - delivered
                         - cancelled
+                captured_amount:
+                    type: integer
+                    minimum: 0
+                    description: Captured amount in minor units. Present on staff order responses only.
                 payment_status:
                     type: string
                     enum:

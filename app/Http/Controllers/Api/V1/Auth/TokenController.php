@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\StaffUser;
 use App\Models\User;
+use App\Services\Auth\CustomerEmailVerificationCodes;
 use App\Services\Auth\StaffTwoFactor;
 use App\Services\Cart\CartService;
 use App\Traits\ApiResponse;
@@ -15,12 +16,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class TokenController extends Controller
 {
     use ApiResponse;
 
-    public function store(LoginRequest $request, StaffTwoFactor $twoFactor, CartService $carts): JsonResponse
+    public function store(LoginRequest $request, StaffTwoFactor $twoFactor, CartService $carts, CustomerEmailVerificationCodes $verificationCodes): JsonResponse
     {
         $guard = Auth::guard('web');
 
@@ -32,7 +34,14 @@ class TokenController extends Controller
         $user = $guard->user();
 
         if (! $user->staffIdentity()->exists() && ! $user->hasVerifiedEmail()) {
-            return $this->apiFailure($request, 'EMAIL_NOT_VERIFIED', 'Verify your email address before signing in.', 403);
+            abort_if($user->isSuspended(), 423);
+            Gate::forUser($user)->authorize('customer-account');
+            $verificationCodes->send($user);
+
+            return $this->apiSuccess($request, [
+                'email_verification_required' => true,
+                'email' => $user->email,
+            ], 'A verification code has been sent to your email address.', 202)->header('Cache-Control', 'no-store');
         }
 
         $result = $twoFactor->login($user, $request->validated('device_name', 'api-client'), $request);

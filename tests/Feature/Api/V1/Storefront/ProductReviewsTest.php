@@ -15,6 +15,8 @@ it('requires a purchase and updates public ratings only for approved reviews', f
     $token = $buyer->createToken('customer')->plainTextToken;
     $admin = catalogStaffToken('admin');
     $url = '/api/v1/products/'.$product->slug;
+    $myReview = '/api/v1/me/product-reviews/'.$product->slug;
+    $this->getJson($myReview)->assertUnauthorized();
     $this->withToken($token)->postJson($url.'/reviews', ['rating' => 4])->assertForbidden()
         ->assertJsonPath('errors.code', 'REVIEW_PURCHASE_REQUIRED');
 
@@ -33,6 +35,7 @@ it('requires a purchase and updates public ratings only for approved reviews', f
     Auth::forgetGuards();
     $this->postJson($url.'/reviews', ['rating' => 3])->assertConflict()->assertJsonPath('errors.code', 'REVIEW_EXISTS');
     $this->getJson($url.'/reviews')->assertOk()->assertJsonCount(0, 'data');
+    $this->getJson($myReview)->assertOk()->assertJsonPath('data.id', $id)->assertJsonPath('data.status', 'pending');
 
     Auth::forgetGuards();
     $this->withToken($admin)->postJson('/api/v1/admin/reviews/'.$id.'/moderate', ['status' => 'approved', 'reason' => 'Verified'])
@@ -43,7 +46,8 @@ it('requires a purchase and updates public ratings only for approved reviews', f
     Auth::forgetGuards();
     $other = User::factory()->create()->createToken('other')->plainTextToken;
     $ownReview = '/api/v1/me/reviews/'.$id;
-    $this->withToken($other)->patchJson($ownReview, ['rating' => 1])->assertNotFound();
+    $this->withToken($other)->getJson($myReview)->assertOk()->assertJsonPath('data', null);
+    $this->patchJson($ownReview, ['rating' => 1])->assertNotFound();
     Auth::forgetGuards();
     $this->withToken($token)->patchJson($ownReview, ['rating' => 5])->assertOk()->assertJsonPath('data.status', 'pending');
     $this->getJson($url)->assertOk()->assertJsonPath('data.rating_count', 0)->assertJsonPath('data.rating_average', null);
@@ -53,6 +57,7 @@ it('requires a purchase and updates public ratings only for approved reviews', f
         ->assertOk()->assertJsonPath('data.changed', 1);
     Auth::forgetGuards();
     $this->withToken($token)->deleteJson($ownReview)->assertNoContent();
+    $this->getJson($myReview)->assertOk()->assertJsonPath('data', null);
     $this->getJson($url)->assertOk()->assertJsonPath('data.rating_count', 0);
 });
 

@@ -2,22 +2,12 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class CustomerEmailVerificationCode extends Notification
 {
-    use Queueable;
-
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(public readonly string $code) {}
 
     /**
      * Get the notification's delivery channels.
@@ -35,9 +25,12 @@ class CustomerEmailVerificationCode extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Your SHOP.CO verification code')
+            ->greeting('Verify your email address')
+            ->line('Enter this one-time code to verify your SHOP.CO account:')
+            ->line('**'.$this->code.'**')
+            ->line('This code expires in 10 minutes and can only be used once.')
+            ->line('If you did not create a SHOP.CO account, you can ignore this email.');
     }
 
     /**
@@ -47,8 +40,6 @@ class CustomerEmailVerificationCode extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 }

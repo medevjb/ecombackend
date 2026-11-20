@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customer_email_verification_codes', function (Blueprint $table) {
-            $table->id();
+        Schema::create('customer_email_verification_codes', function (Blueprint $table): void {
+            $table->foreignId('user_id')->primary()->constrained()->cascadeOnDelete();
+            $table->string('code_hash');
+            $table->timestamp('expires_at');
+            $table->unsignedTinyInteger('attempts')->default(0);
             $table->timestamps();
         });
     }

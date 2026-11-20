@@ -17,6 +17,7 @@ class OrderResource extends JsonResource
             'number' => $this->number,
             'status' => $this->status->value,
             'payment_status' => $this->payment->status->value,
+            'captured_amount' => $this->when($request->routeIs('api.v1.admin.orders.*'), fn (): int => $this->payment->captured_amount),
             'currency' => $this->currency,
             'subtotal_amount' => $this->subtotal_amount,
             'discount_amount' => $this->discount_amount,

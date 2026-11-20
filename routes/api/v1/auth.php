@@ -10,7 +10,9 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('login', [TokenController::class, 'store'])->middleware('throttle:api-login')->name('login');
     Route::post('register', [CustomerAccountController::class, 'store'])->middleware('throttle:10,1')->name('register');
     Route::post('email/resend-verification', [CustomerVerificationController::class, 'resend'])
-        ->middleware('throttle:customer-recovery')->name('verification.resend');
+        ->middleware('throttle:customer-email-verification')->name('verification.resend');
+    Route::post('email/verify-code', [CustomerVerificationController::class, 'verifyCode'])
+        ->middleware('throttle:customer-email-verification')->name('verification.verify-code');
     Route::post('forgot-password', [PasswordController::class, 'forgot'])->middleware('throttle:customer-recovery')->name('password.forgot');
     Route::post('reset-password', [PasswordController::class, 'reset'])->middleware('throttle:customer-recovery')->name('password.reset');
     Route::get('email/verify/{id}/{hash}', [CustomerVerificationController::class, 'verify'])

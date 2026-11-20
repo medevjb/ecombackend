@@ -1,15 +1,16 @@
 <?php
 
 use App\Models\User;
+use App\Notifications\CustomerEmailVerificationCode;
 use App\Notifications\QueuedPasswordReset;
 use HasinHayder\Tyro\Models\Role;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 it('registers only a customer and supports shared login and profile updates', function () {
+    Notification::fake();
     $registration = $this->postJson('/api/v1/auth/register', [
         'name' => 'Example Customer',
         'email' => ' CUSTOMER@EXAMPLE.TEST ',
@@ -24,10 +25,19 @@ it('registers only a customer and supports shared login and profile updates', fu
 
     expect($registration->json('data.id'))->toMatch('/^[0-9a-hjkmnp-tv-z]{26}$/');
 
-    $login = $this->postJson('/api/v1/auth/login', [
-        'email' => 'CUSTOMER@EXAMPLE.TEST',
-        'password' => 'SecurePass!234',
-    ])->assertOk();
+    $credentials = ['email' => 'CUSTOMER@EXAMPLE.TEST', 'password' => 'SecurePass!234'];
+    $this->postJson('/api/v1/auth/login', $credentials)->assertAccepted()
+        ->assertJsonPath('data.email_verification_required', true)->assertJsonMissingPath('data.access_token');
+
+    $customer = User::query()->where('public_id', $registration->json('data.id'))->firstOrFail();
+    $code = Notification::sent($customer, CustomerEmailVerificationCode::class)->last()->code;
+    $verify = ['email' => $customer->email, 'code' => $code];
+    $this->postJson('/api/v1/auth/email/verify-code', $verify)
+        ->assertOk()->assertJsonPath('data.email_verified', true);
+    $this->postJson('/api/v1/auth/email/verify-code', $verify)
+        ->assertUnprocessable()->assertJsonValidationErrors('code', 'errors.fields');
+
+    $login = $this->postJson('/api/v1/auth/login', $credentials)->assertOk();
 
     Auth::forgetGuards();
 
@@ -100,13 +110,13 @@ it('blocks staff access to customer profiles and customer recovery emails', func
     Notification::assertNothingSent();
 });
 
-it('verifies the email only with a valid signed link', function () {
+it('continues to accept valid legacy verification links', function () {
     Notification::fake();
     $user = User::factory()->unverified()->create();
     $token = $user->createToken('browser');
 
     $this->withToken($token->plainTextToken)->postJson('/api/v1/auth/email/verification-notification')->assertAccepted();
-    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentTo($user, CustomerEmailVerificationCode::class);
 
     $parameters = ['id' => $user->public_id, 'hash' => sha1($user->email)];
     $this->getJson(route('api.v1.auth.verification.verify', $parameters, false))->assertForbidden();
